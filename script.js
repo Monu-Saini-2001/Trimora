@@ -52,8 +52,20 @@ function getBarberActiveQueue(salonId,barberName){return historyData.filter(t=>t
 async function confirmBooking(){const mobileInput=document.getElementById('mobileNumberInput').value.trim();const travelInput=parseInt(document.getElementById('travelTimeInput').value.trim(),10);if(!/^\d{10}$/.test(mobileInput)){alert(t('invalidMobile'));return}if(isNaN(travelInput)||travelInput<=0||travelInput>180){alert(t('invalidTravel'));return}const tokenNumber=1;const servicesDuration=selectedServices.reduce((sum,id)=>{const s=salonServicesData.find(srv=>srv.id===id);return sum+(s?(s.times[selectedBarber.name]||0):0)},0);const isEmergency=document.getElementById('emergencyBookingToggle')?document.getElementById('emergencyBookingToggle').checked:false;const comboTriggered=selectedSalon.comboActive&&selectedSalon.comboTriggerServiceIds&&selectedSalon.comboTriggerServiceIds.length>0&&selectedSalon.comboRewardServiceId&&selectedSalon.comboTriggerServiceIds.every(tid=>selectedServices.includes(tid));const price=selectedServices.reduce((sum,id)=>{if(comboTriggered&&id===selectedSalon.comboRewardServiceId)return sum;const s=salonServicesData.find(srv=>srv.id===id);return sum+(s?(s.price||0):0)},0);const payload={tokenNumber,remainingWait:servicesDuration,initialWait:0,servicesDuration,travelTime:travelInput,mobile:mobileInput,timestamp:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}),bookingTimeMs:Date.now(),dateString:new Date().toLocaleDateString(),salonId:selectedSalon.id,salonName:selectedSalon.name,barberName:selectedBarber.name,servicesIds:[...selectedServices],servicesList:selectedServices.map(id=>{const s=salonServicesData.find(sItem=>sItem.id===id);return s?(currentLang==='en'?s.nameEn:s.nameHi):id}),status:"active",isEmergency,price};try{const res=await fetch('/api/bookings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});if(!res.ok){const err=await res.json();alert(err.error||"Booking failed.");return}const result=await res.json();const newTokenObj=result.booking;localStorage.setItem('customer_mobile',mobileInput);historyData.unshift(newTokenObj);if(result.gapConsumedId){queueGaps=queueGaps.filter(g=>g.id!==result.gapConsumedId)}playSound('success');resetFormSelections();startPolling();startLocalTick();renderTrackerUI();updateTrackerBtnVisibility();navigateTo('tracking')}catch(e){console.error(e)}}
 function resetFormSelections(){selectedBarber=null;selectedServices=[];comboRewardAutoAdded=false;const toggle=document.getElementById('emergencyBookingToggle');if(toggle)toggle.checked=false;renderBarbersList();updateServiceTimesSum();checkBookingState()}
 function saveToHistory(tokenObj){}
-function loadActiveToken(){const hasActive=historyData.some(t=>t.status==='active');if(hasActive){startPolling();startLocalTick();renderTrackerUI()}updateTrackerBtnVisibility()}
-function updateTrackerBtnVisibility(){const trackerBtn=document.getElementById('headerTrackerBtn');if(trackerBtn){const loggedInMobile=localStorage.getItem('customer_mobile');let hasActive=false;if(isSuperAdmin){hasActive=historyData.some(t=>t.status==='active')}else if(loggedInSalonId){hasActive=historyData.some(t=>t.status==='active'&&t.salonId===loggedInSalonId)}else if(loggedInMobile){hasActive=historyData.some(t=>t.status==='active'&&t.mobile===loggedInMobile)}if(hasActive){trackerBtn.classList.remove('hidden');trackerBtn.classList.add('flex')}else{trackerBtn.classList.remove('flex');trackerBtn.classList.add('hidden')}}}
+function hasUserActiveToken() {
+  const loggedInMobile = localStorage.getItem('customer_mobile');
+  if (isSuperAdmin) {
+    return historyData.some(t => t.status === 'active');
+  } else if (loggedInSalonId) {
+    return historyData.some(t => t.status === 'active' && t.salonId === loggedInSalonId);
+  } else if (loggedInMobile) {
+    return historyData.some(t => t.status === 'active' && t.mobile === loggedInMobile);
+  }
+  return false;
+}
+function loadActiveToken(){if(hasUserActiveToken()){startPolling();startLocalTick();renderTrackerUI()}updateTrackerBtnVisibility()}
+function updateTrackerBtnVisibility(){const trackerBtn=document.getElementById('headerTrackerBtn');if(trackerBtn){if(hasUserActiveToken()){trackerBtn.classList.remove('hidden');trackerBtn.classList.add('flex')}else{trackerBtn.classList.remove('flex');trackerBtn.classList.add('hidden')}}}
+
 
 
 
@@ -370,7 +382,7 @@ async function fetchLatestDataSilently() {
     if (historyRes.ok) {
       const newHistory = await historyRes.json();
       newHistory.forEach(newObj => {
-        const oldObj = historyData.find(t => t.tokenNumber === newObj.tokenNumber && t.status === 'active');
+        const oldObj = historyData.find(t => t._id && newObj._id && t._id == newObj._id && t.status === 'active');
         if (oldObj && newObj.status === 'active') {
           const diff = Math.abs(oldObj.remainingWait - newObj.remainingWait);
           if (diff < 0.2) {
@@ -382,7 +394,7 @@ async function fetchLatestDataSilently() {
       if (loggedInMobile) {
         newHistory.forEach(newToken => {
           if (newToken.mobile === loggedInMobile && newToken.status === 'completed') {
-            const oldToken = historyData.find(t => t.tokenNumber === newToken.tokenNumber);
+            const oldToken = historyData.find(t => t._id && newToken._id && t._id == newToken._id);
             if (oldToken && oldToken.status === 'active') {
               playSound('complete');
               setTimeout(() => openFeedbackModal(newToken), 100);
@@ -394,7 +406,7 @@ async function fetchLatestDataSilently() {
         const userActiveTokens = newHistory.filter(t => t.mobile === loggedInMobile && t.status === 'active');
         userActiveTokens.forEach(token => {
           const timeline = getBarberTimeline(token.salonId, token.barberName);
-          const idx = timeline.findIndex(t => t.tokenNumber == token.tokenNumber);
+          const idx = timeline.findIndex(t => (t._id && token._id && t._id == token._id) || t.tokenNumber == token.tokenNumber);
           let waitTimeToStart = 0;
           if (idx > 0) {
             const first = timeline[0];
@@ -405,7 +417,7 @@ async function fetchLatestDataSilently() {
             }
           }
           if (waitTimeToStart > 0.1 && waitTimeToStart <= token.travelTime) {
-            const alertKey = token.tokenNumber + '_travel';
+            const alertKey = (token._id || token.tokenNumber) + '_travel';
             if (!triggeredAlerts[alertKey]) {
               triggeredAlerts[alertKey] = true;
               triggerWhatsAppAlert(token, waitTimeToStart);
@@ -413,7 +425,7 @@ async function fetchLatestDataSilently() {
             }
           }
           if (waitTimeToStart <= 0.1) {
-            const alertKey = token.tokenNumber + '_start';
+            const alertKey = (token._id || token.tokenNumber) + '_start';
             if (!triggeredAlerts[alertKey]) {
               triggeredAlerts[alertKey] = true;
               triggerWhatsAppAlert(token, waitTimeToStart);
@@ -476,7 +488,7 @@ function renderTrackerUI(){
   let html='';
   activeTokens.forEach(token=>{
     const timeline=getBarberTimeline(token.salonId,token.barberName);
-    const idx=timeline.findIndex(t=>t.tokenNumber==token.tokenNumber);
+    const idx=timeline.findIndex(t=>(t._id && token._id && t._id == token._id) || t.tokenNumber == token.tokenNumber);
     let waitTime=token.remainingWait;
     if(idx>0){
       const first=timeline[0];
@@ -497,7 +509,7 @@ function renderTrackerUI(){
     const vipBadge=token.isEmergency?'<span class="bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[9px] px-2 py-0.5 rounded-full font-bold ml-1.5 flex items-center space-x-0.5"><i class="fa-solid fa-crown text-[8px]"></i><span>VIP</span></span>':'';
     
     const barberActiveQueue = getBarberActiveQueue(token.salonId, token.barberName);
-    const isFirstToken = (barberActiveQueue.length > 0 && barberActiveQueue[0].tokenNumber === token.tokenNumber);
+    const isFirstToken = (barberActiveQueue.length > 0 && ((barberActiveQueue[0]._id && token._id && barberActiveQueue[0]._id == token._id) || barberActiveQueue[0].tokenNumber === token.tokenNumber));
     
     const barberGaps=queueGaps.filter(g=>g.salonId===token.salonId&&g.barberName===token.barberName);
     const shiftBtnHtml=barberGaps.length>0?'<button onclick="shiftBarberQueue(\'' + token.salonId + '\',\'' + token.barberName + '\')" class="w-full mt-2.5 bg-amber-955/40 hover:bg-amber-900 border border-amber-800 text-amber-400 py-1.5 rounded-lg text-[9px] font-bold transition-all flex items-center justify-center space-x-1"><i class="fa-solid fa-arrows-left-right"></i><span>' + t('shiftQueue') + '</span></button>':'';
@@ -513,15 +525,15 @@ function renderTrackerUI(){
         barberControlHtml = '<div class="mt-4 pt-3 border-t border-slate-900">' +
           '<p class="text-[10px] text-brand-400 font-bold uppercase tracking-wider mb-2 text-center">' + t('barberControl') + '</p>' +
           '<div class="grid grid-cols-3 gap-1.5">' +
-            '<button onclick="simulateNextToken(' + token.tokenNumber + ')" class="bg-emerald-955/40 hover:bg-emerald-900 border border-emerald-800 text-emerald-400 py-1.5 rounded-lg text-[9px] font-bold transition-all flex items-center justify-center space-x-1">' +
+            '<button onclick="simulateNextToken(\'' + token._id + '\')" class="bg-emerald-955/40 hover:bg-emerald-900 border border-emerald-800 text-emerald-400 py-1.5 rounded-lg text-[9px] font-bold transition-all flex items-center justify-center space-x-1">' +
               '<i class="fa-solid fa-circle-check"></i>' +
               '<span>' + t('nextCustomer') + '</span>' +
             '</button>' +
-            '<button onclick="simulateAdjustTime(' + token.tokenNumber + ',5)" class="bg-indigo-955/40 hover:bg-indigo-900 border border-indigo-800 text-indigo-400 py-1.5 rounded-lg text-[9px] font-bold transition-all flex items-center justify-center space-x-0.5">' +
+            '<button onclick="simulateAdjustTime(\'' + token._id + '\',5)" class="bg-indigo-955/40 hover:bg-indigo-900 border border-indigo-800 text-indigo-400 py-1.5 rounded-lg text-[9px] font-bold transition-all flex items-center justify-center space-x-0.5">' +
               '<i class="fa-solid fa-plus"></i>' +
               '<span>' + t('add5mins') + '</span>' +
             '</button>' +
-            '<button onclick="simulateAdjustTime(' + token.tokenNumber + ',-5)" class="bg-indigo-955/40 hover:bg-indigo-900 border border-indigo-800 text-indigo-400 py-1.5 rounded-lg text-[9px] font-bold transition-all flex items-center justify-center space-x-0.5">' +
+            '<button onclick="simulateAdjustTime(\'' + token._id + '\',-5)" class="bg-indigo-955/40 hover:bg-indigo-900 border border-indigo-800 text-indigo-400 py-1.5 rounded-lg text-[9px] font-bold transition-all flex items-center justify-center space-x-0.5">' +
               '<i class="fa-solid fa-minus"></i>' +
               '<span>' + t('sub5mins') + '</span>' +
             '</button>' +
@@ -570,7 +582,7 @@ function renderTrackerUI(){
         '</div>' +
       '</div>' +
       barberControlHtml +
-      '<button onclick="cancelActiveToken(' + token.tokenNumber + ')" class="w-full mt-2.5 bg-rose-955/30 hover:bg-rose-900/40 border border-rose-955 text-rose-455 py-1.5 rounded-lg text-[10px] font-bold transition-all flex items-center justify-center space-x-1">' +
+      '<button onclick="cancelActiveToken(\'' + token._id + '\')" class="w-full mt-2.5 bg-rose-955/30 hover:bg-rose-900/40 border border-rose-955 text-rose-455 py-1.5 rounded-lg text-[10px] font-bold transition-all flex items-center justify-center space-x-1">' +
         '<i class="fa-solid fa-ban"></i>' +
         '<span>' + t('cancelToken') + '</span>' +
       '</button>' +
@@ -708,7 +720,47 @@ function endSimulatedCall(){
 function incrementBarberStats(barberName,servicesIds){}
 async function simulateNextToken(bookingIdOrToken){try{const res=await fetch(`/api/bookings/${bookingIdOrToken}/simulate-next`,{method:'POST'});const booking=await res.json();const idx=historyData.findIndex(t=>(t._id && booking._id && t._id == booking._id) || (t.tokenNumber==bookingIdOrToken&&t.status==='active'));if(idx!==-1){historyData[idx].status='completed'}playSound('complete');updateTrackerBtnVisibility();renderTrackerUI();const activeLeft=historyData.some(t=>t.status==='active');if(!activeLeft){if(countdownInterval)clearInterval(countdownInterval);navigateTo('home')}const loggedInMobile=localStorage.getItem('customer_mobile');if(loggedInMobile&&booking.mobile===loggedInMobile){setTimeout(()=>openFeedbackModal(booking),100)}}catch(e){console.error(e)}}
 async function simulateAdjustTime(bookingIdOrToken,minutes){try{const res=await fetch(`/api/bookings/${bookingIdOrToken}/simulate-adjust`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({minutes})});if(!res.ok){const err=await res.json();alert(err.error||"Adjust failed.");return}const booking=await res.json();const idx=historyData.findIndex(t=>(t._id && booking._id && t._id == booking._id) || (t.tokenNumber==bookingIdOrToken&&t.status==='active'));if(idx!==-1){historyData[idx].remainingWait=booking.remainingWait}renderTrackerUI()}catch(e){console.error(e)}}
-async function cancelActiveToken(bookingIdOrToken){const tokenItem = historyData.find(t=>(t._id && t._id == bookingIdOrToken) || (t.tokenNumber==bookingIdOrToken&&t.status==='active'));const tokenNoDisplay = tokenItem ? tokenItem.tokenNumber : bookingIdOrToken;const confirmCancel=confirm(t('cancelConfirm'));if(!confirmCancel)return;playSound('cancel');alert(t('cancelSuccess').replace('{token}',tokenNoDisplay));try{const res=await fetch(`/api/bookings/${bookingIdOrToken}/cancel`,{method:'POST'});const result=await res.json();const idx=historyData.findIndex(t=>(t._id && result.booking._id && t._id == result.booking._id) || (t.tokenNumber==bookingIdOrToken&&t.status==='active'));if(idx!==-1){historyData[idx].status='cancelled'}queueGaps.push(result.gap);triggerExpressSlotNotification(result.booking.salonName,result.booking.barberName);updateEmergencyAlert();updateTrackerBtnVisibility();renderTrackerUI();const activeLeft=historyData.some(t=>t.status==='active');if(!activeLeft){if(countdownInterval)clearInterval(countdownInterval);navigateTo('home')}}catch(e){console.error(e)}}
+let isCancellingToken = false;
+async function cancelActiveToken(bookingIdOrToken){
+  if(isCancellingToken) return;
+  const tokenItem = historyData.find(t=>(t._id && t._id == bookingIdOrToken) || (t.tokenNumber==bookingIdOrToken&&t.status==='active'));
+  const tokenNoDisplay = tokenItem ? tokenItem.tokenNumber : bookingIdOrToken;
+  const confirmCancel=confirm(t('cancelConfirm'));
+  if(!confirmCancel)return;
+  
+  isCancellingToken = true;
+  try{
+    playSound('cancel');
+    const res=await fetch(`/api/bookings/${bookingIdOrToken}/cancel`,{method:'POST'});
+    if (!res.ok) {
+      const err = await res.json();
+      alert(err.error || "Cancellation failed. Please try again.");
+      isCancellingToken = false;
+      return;
+    }
+    const result=await res.json();
+    const idx=historyData.findIndex(t=>(t._id && result.booking._id && t._id == result.booking._id) || (t.tokenNumber==bookingIdOrToken&&t.status==='active'));
+    if(idx!==-1){
+      historyData[idx].status='cancelled'
+    }
+    queueGaps.push(result.gap);
+    triggerExpressSlotNotification(result.booking.salonName,result.booking.barberName);
+    updateEmergencyAlert();
+    updateTrackerBtnVisibility();
+    renderTrackerUI();
+    alert(t('cancelSuccess').replace('{token}',tokenNoDisplay));
+    const activeLeft=historyData.some(t=>t.status==='active');
+    if(!activeLeft){
+      if(countdownInterval)clearInterval(countdownInterval);
+      navigateTo('home')
+    }
+  }catch(e){
+    console.error(e);
+    alert("An error occurred during cancellation.");
+  } finally {
+    isCancellingToken = false;
+  }
+}
 function setHistoryFilter(filter){currentHistoryFilter=filter;const tabs=['histTabAll','histTabActive','histTabCompleted','histTabCancelled'];tabs.forEach(tId=>{const el=document.getElementById(tId);if(el){el.className="flex-grow flex-shrink-0 text-center py-1.5 rounded-lg font-bold text-slate-400 hover:text-slate-200 transition-all"}});const actEl=document.getElementById('histTab'+filter.charAt(0).toUpperCase()+filter.slice(1));if(actEl)actEl.className="flex-grow flex-shrink-0 text-center py-1.5 rounded-lg font-bold bg-brand-600 text-white shadow-md transition-all";renderHistoryList()}
 function renderHistoryList(){const container=document.getElementById('historyListContainer');if(!container)return;container.innerHTML='';let filtered=historyData;if(currentHistoryFilter!=='all')filtered=historyData.filter(t=>t.status===currentHistoryFilter);if(filtered.length===0){container.innerHTML=`<div class="text-center py-8 text-slate-500 text-xs">${t('historyEmpty')}</div>`;return}filtered.forEach(item=>{const div=document.createElement('div'),statusColor=item.status==='active'?'text-emerald-400':(item.status==='completed'?'text-blue-400':'text-rose-400');div.className="bg-slate-900 border border-slate-800 rounded-xl p-3.5 space-y-2 text-xs";let feedbackHtml='';if(item.status==='completed'){if(item.feedback&&item.feedback.salonRating){const salonStars='★'.repeat(item.feedback.salonRating)+'☆'.repeat(5-item.feedback.salonRating);const barberStars='★'.repeat(item.feedback.barberRating)+'☆'.repeat(5-item.feedback.barberRating);const cleanLabel=t('feedbackBarberLabel').replace(' ({name})','').replace('({name})','');feedbackHtml=`<div class="mt-2 pt-2 border-t border-slate-800 flex flex-col space-y-1"><div class="flex justify-between items-center text-[10px] text-slate-400"><span>${t('feedbackSalonLabel')}: <span class="text-amber-400 font-bold">${salonStars}</span></span><span>${cleanLabel}: <span class="text-amber-400 font-bold">${barberStars}</span></span></div>${item.feedback.comment?`<p class="text-[10px] text-slate-400 italic bg-slate-955/40 p-1.5 rounded-lg border border-slate-850">"${item.feedback.comment}"</p>`:''}</div>`}else{feedbackHtml=`<div class="mt-2 pt-2 border-t border-slate-800 text-right"><button onclick="openFeedbackModalFromHistory('${item._id || item.tokenNumber}')" class="bg-brand-600 hover:bg-brand-700 text-white px-2.5 py-1.5 rounded-lg text-[10px] font-bold transition-all shadow-md"><i class="fa-solid fa-star mr-1"></i>${t('giveFeedbackBtn')}</button></div>`}}div.innerHTML=`<div class="flex justify-between items-center"><span class="font-bold text-white">${item.salonName}</span><span class="text-[10px] text-slate-500">${item.dateString} ${item.timestamp}</span></div><div class="flex justify-between items-center text-[11px]"><span class="text-slate-350">${currentLang==='en'?'Barber':'नाई'}: ${item.barberName} | ${t('tokenNo')}${item.tokenNumber}</span><span class="font-bold ${statusColor}">${t('status'+item.status.charAt(0).toUpperCase()+item.status.slice(1))}</span></div><div class="text-[10px] text-slate-400 leading-relaxed">${item.servicesList.join(', ')}</div>${feedbackHtml}`;container.appendChild(div)})}
 async function clearHistory(){if(confirm(currentLang==='en'?'Are you sure you want to clear your booking history?':'क्या आप वाकई अपनी बुकिंग का इतिहास साफ़ करना चाहते हैं?')){try{await fetch('/api/bookings/clear-history',{method:'POST'});historyData=[];renderHistoryList();updateTrackerBtnVisibility();if(countdownInterval)clearInterval(countdownInterval);navigateTo('home')}catch(e){console.error(e)}}}
