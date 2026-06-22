@@ -29,8 +29,8 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        // Load the local IP address of your server
-        myWebView.loadUrl("http://172.20.10.3:2000");
+        // Load the live hosted Render URL
+        myWebView.loadUrl("https://trimora-eceg.onrender.com");
     }
 
     @Override
