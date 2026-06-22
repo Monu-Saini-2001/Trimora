@@ -1,0 +1,20 @@
+# Node dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.env
+
+# Local database folder
+mongodb_data/
+
+# Output APKs and builds
+*.apk
+trimora-android/.gradle/
+trimora-android/build/
+trimora-android/app/build/
+trimora-android/local.properties
+
+# OS files
+.DS_Store
+Thumbs.db

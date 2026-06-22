@@ -1,0 +1,1090 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>ZeroWait Q - Live Salon Token System</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.css">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config={
+      theme:{
+        extend:{
+          fontFamily:{
+            sans:['Inter','sans-serif'],
+            outfit:['Outfit','sans-serif']
+          },
+          colors:{
+            slate:{
+              50:'#fcfcfc',
+              100:'#f3f4f6',
+              200:'#e5e7eb',
+              300:'#d1d5db',
+              400:'#9ca3af',
+              450:'#7b828f',
+              500:'#6b7280',
+              600:'#4b5563',
+              700:'#374151',
+              800:'#1f2937',
+              850:'#181e29',
+              900:'#0f131a',
+              950:'#080a0f',
+              955:'#06080c'
+            },
+            brand:{
+              50:'#fdfbf7',
+              100:'#f7f3e1',
+              200:'#eee4bd',
+              300:'#e2d091',
+              400:'#d5b863',
+              500:'#c99e32',
+              600:'#b58724',
+              700:'#94691c',
+              800:'#755017',
+              900:'#5d3f15',
+              950:'#37230b'
+            },
+            indigo:{
+              50:'#fefbf6',
+              100:'#fdf4e4',
+              200:'#fae5c1',
+              300:'#f6d093',
+              400:'#efa852',
+              500:'#e58c2b',
+              600:'#cf7521',
+              700:'#ab591c',
+              800:'#894519',
+              900:'#6e3717',
+              950:'#411d0a'
+            },
+            purple:{
+              600:'#b58724'
+            },
+            pink:{
+              500:'#c99e32'
+            }
+          },
+          animation:{
+            'pulse-slow':'pulse 3s cubic-bezier(0.4,0,0.6,1) infinite',
+            'bounce-slow':'bounce 2s infinite'
+          }
+        }
+      }
+    }
+  </script>
+  <link rel="stylesheet" href="styles.css?v=2.3">
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex justify-center items-center p-0 md:p-4">
+  <main id="mainShell" class="w-full max-w-[480px] min-h-screen md:min-h-[850px] md:max-h-[920px] bg-slate-950 text-slate-100 flex flex-col md:rounded-3xl shadow-2xl relative overflow-hidden border border-slate-800">
+    <div id="whatsappNotification" class="absolute top-0 left-0 right-0 z-50 p-4 transition-all duration-500 transform -translate-y-full pointer-events-none">
+      <div class="bg-slate-900 border-l-4 border-emerald-500 rounded-xl shadow-2xl p-4 flex items-start space-x-3 pointer-events-auto border border-slate-800">
+        <div class="bg-emerald-500 p-2 rounded-lg text-white flex-shrink-0">
+          <i class="fa-brands fa-whatsapp text-xl"></i>
+        </div>
+        <div class="flex-grow">
+          <div class="flex justify-between items-center">
+            <span class="text-xs font-semibold text-emerald-400 font-outfit uppercase tracking-wider" data-translate="whatsappTitle">ZeroWait Q Alert</span>
+            <span class="text-[10px] text-slate-400" id="notificationTime">Just now</span>
+          </div>
+          <p class="text-sm mt-1 text-slate-200" id="whatsappMsgText">Time to leave! Your remaining wait time matches your travel time.</p>
+        </div>
+        <button onclick="closeWhatsAppNotification()" class="text-slate-400 hover:text-white flex-shrink-0 self-center">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+    </div>
+    <div id="loginModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm hidden">
+      <div class="w-full max-w-[340px] bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-2xl relative space-y-4">
+        <div id="owner-login-view" class="space-y-4">
+          <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+            <h3 class="font-outfit font-extrabold text-sm text-white" data-translate="ownerLoginTitle">Owner Authentication</h3>
+            <button onclick="closeLoginModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-sm"></i></button>
+          </div>
+          <div class="space-y-3">
+            <div>
+              <label class="block text-[10px] text-slate-300 font-semibold mb-1" data-translate="loginIdentityLabel">Salon Name or Mobile</label>
+              <input type="text" id="loginIdentityInput" placeholder="e.g. Vogue Studio" class="w-full bg-slate-950 border border-slate-800 text-white rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-brand-500 transition-colors">
+            </div>
+            <div>
+              <label class="block text-[10px] text-slate-300 font-semibold mb-1" data-translate="pinLabel">Enter Password</label>
+              <input type="password" id="ownerPasswordInput" placeholder="••••••" class="w-full bg-slate-950 border border-slate-800 text-white rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-brand-500 transition-colors">
+            </div>
+            <p id="loginErrorMsg" class="text-[10px] text-rose-400 text-center font-medium hidden"></p>
+          </div>
+          <button onclick="submitLogin()" class="w-full bg-brand-600 hover:bg-brand-700 text-white py-2.5 rounded-xl text-xs font-bold transition-all shadow-md flex items-center justify-center space-x-1.5">
+            <i class="fa-solid fa-arrow-right-to-bracket"></i>
+            <span data-translate="loginBtn">Authenticate</span>
+          </button>
+          <div class="text-center pt-1 border-t border-slate-950">
+            <button onclick="toggleLoginRegisterView(true)" class="text-[10px] text-brand-400 hover:text-brand-300 font-bold transition-colors">
+              New Salon? Register here / नया सैलून? यहाँ रजिस्टर करें
+            </button>
+          </div>
+        </div>
+        <div id="owner-register-view" class="space-y-4 hidden max-h-[80vh] overflow-y-auto pr-1 no-scrollbar">
+          <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+            <h3 class="font-outfit font-extrabold text-sm text-white" id="ownerRegisterTitle" data-translate="ownerRegisterTitle">Register Salon & Owner</h3>
+            <button onclick="closeLoginModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-sm"></i></button>
+          </div>
+          <div id="reg-fields-container" class="space-y-4">
+            <div class="space-y-3">
+              <div>
+                <label class="block text-[10px] text-slate-300 font-semibold mb-1" data-translate="ownerNameLabel">Owner Name</label>
+                <input type="text" id="regOwnerName" placeholder="e.g. Ramesh Kumar" class="w-full bg-slate-950 border border-slate-800 text-white rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-brand-500 transition-colors">
+              </div>
+              <div>
+                <label class="block text-[10px] text-slate-300 font-semibold mb-1" data-translate="ownerMobileLabel">Owner Mobile (10 digits)</label>
+                <input type="tel" id="regOwnerMobile" name="ownerMobile" autocomplete="tel" maxlength="16" placeholder="e.g. 9826012345" class="w-full bg-slate-950 border border-slate-800 text-white rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-brand-500 transition-colors">
+              </div>
+              <div>
+                <label class="block text-[10px] text-slate-300 font-semibold mb-1" data-translate="ownerEmailLabel">Owner Email</label>
+                <input type="email" id="regOwnerEmail" placeholder="e.g. owner@example.com" class="w-full bg-slate-950 border border-slate-800 text-white rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-brand-500 transition-colors">
+              </div>
+              <div>
+                <label class="block text-[10px] text-slate-300 font-semibold mb-1" data-translate="salonNameLabel">Salon Name</label>
+                <input type="text" id="regSalonName" placeholder="e.g. Ramesh Hair Salon" class="w-full bg-slate-950 border border-slate-800 text-white rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-brand-500 transition-colors">
+              </div>
+              <div>
+                <label class="block text-[10px] text-slate-300 font-semibold mb-1">Salon Type / सैलून का प्रकार</label>
+                <select id="regSalonType" class="w-full bg-slate-950 border border-slate-800 text-white rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-brand-500 transition-colors">
+                  <option value="salon">Salon (Men) / सैलून (पुरुष)</option>
+                  <option value="unisex">Unisex / यूनिसेक्स</option>
+                  <option value="beauty parlour">Beauty Parlour (Women) / ब्यूटी पार्लर (महिला)</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-[10px] text-slate-300 font-semibold mb-1" data-translate="salonAddressLabel">Salon Address</label>
+                <input type="text" id="regSalonAddress" placeholder="e.g. PLA Market, Hisar" class="w-full bg-slate-950 border border-slate-800 text-white rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-brand-500 transition-colors">
+              </div>
+              <div class="grid grid-cols-2 gap-2">
+                <div>
+                  <label class="block text-[10px] text-slate-300 font-semibold mb-1">Latitude</label>
+                  <input type="number" step="0.0001" id="regSalonLat" placeholder="e.g. 29.15" class="w-full bg-slate-950 border border-slate-800 text-white rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-brand-500 transition-colors">
+                </div>
+                <div>
+                  <label class="block text-[10px] text-slate-300 font-semibold mb-1">Longitude</label>
+                  <input type="number" step="0.0001" id="regSalonLng" placeholder="e.g. 75.72" class="w-full bg-slate-950 border border-slate-800 text-white rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-brand-500 transition-colors">
+                </div>
+              </div>
+              <div>
+                <label class="block text-[10px] text-slate-300 font-semibold mb-1">Upload Salon Photo / सैलून की फोटो अपलोड करें</label>
+                <input type="file" id="regSalonPhoto" accept="image/*" onchange="handleRegPhotoUpload(event)" class="w-full bg-slate-950 border border-slate-800 text-white rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-brand-500 transition-colors">
+                <!-- Preview Container -->
+                <div id="regSalonPhotoPreviewContainer" class="hidden mt-2 border border-slate-800 rounded-xl overflow-hidden h-24 w-full bg-slate-950 flex items-center justify-center relative">
+                  <img id="regSalonPhotoPreview" src="" alt="Salon Photo Preview" class="w-full h-full object-cover">
+                  <button type="button" onclick="clearRegPhoto()" class="absolute top-1 right-1 bg-rose-600/80 hover:bg-rose-600 text-white text-[10px] p-1.5 rounded-full"><i class="fa-solid fa-trash-can"></i></button>
+                </div>
+              </div>
+              <div>
+                <label class="block text-[10px] text-slate-300 font-semibold mb-1" data-translate="regPasswordLabel">Set Password (min 6 characters)</label>
+                <input type="password" id="regOwnerPassword" placeholder="••••••" class="w-full bg-slate-950 border border-slate-800 text-white rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-brand-500 transition-colors">
+              </div>
+              <p id="registerErrorMsg" class="text-[10px] text-rose-400 text-center font-medium hidden"></p>
+            </div>
+            <button onclick="submitRegisterOwner()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-2.5 rounded-xl text-xs font-bold transition-all shadow-md flex items-center justify-center space-x-1.5">
+              <i class="fa-solid fa-circle-check"></i>
+              <span data-translate="registerBtn">Register Salon</span>
+            </button>
+            <div class="text-center pt-1 border-t border-slate-950">
+              <button onclick="toggleLoginRegisterView(false)" class="text-[10px] text-brand-400 hover:text-brand-300 font-bold transition-colors">
+                Already registered? Login / पहले से रजिस्टर हैं? लॉग इन करें
+              </button>
+            </div>
+          </div>
+          <div id="reg-otp-container" class="space-y-4 hidden">
+            <div class="space-y-3">
+              <div>
+                <label class="block text-[10px] text-slate-300 font-semibold mb-1" data-translate="otpLabel">Enter 6-Digit OTP</label>
+                <input type="text" id="regOtpInput" maxlength="6" placeholder="e.g. 123456" class="w-full bg-slate-950 border border-slate-800 text-white text-center rounded-xl py-2 text-sm tracking-widest focus:outline-none focus:border-brand-500 transition-colors">
+              </div>
+              <p id="otpErrorMsg" class="text-[10px] text-rose-400 text-center font-medium hidden"></p>
+            </div>
+            <button onclick="submitVerifyOtp()" class="w-full bg-brand-600 hover:bg-brand-700 text-white py-2.5 rounded-xl text-xs font-bold transition-all shadow-md flex items-center justify-center space-x-1.5">
+              <i class="fa-solid fa-key"></i>
+              <span data-translate="verifyOtpBtn">Verify & Register</span>
+            </button>
+            <div class="text-center pt-1 border-t border-slate-950">
+              <button onclick="backToRegisterFields()" class="text-[10px] text-slate-400 hover:text-slate-300 font-bold transition-colors">
+                ← Edit Registration Details / जानकारी संपादित करें
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Lightbox Modal for Photo Gallery -->
+    <div id="photoLightboxModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-sm hidden">
+      <div class="w-full max-w-[440px] bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-2xl relative flex flex-col items-center">
+        <button onclick="closePhotoLightbox()" class="absolute top-3 right-3 w-8 h-8 rounded-full bg-slate-955 border border-slate-850 flex items-center justify-center hover:bg-slate-850 transition-colors text-slate-400 hover:text-white">
+          <i class="fa-solid fa-xmark text-sm"></i>
+        </button>
+        <div class="w-full rounded-xl overflow-hidden border border-slate-850 mt-4 bg-slate-955 flex items-center justify-center max-h-[50vh]">
+          <img id="lightboxImage" src="" class="max-w-full max-h-[50vh] object-contain">
+        </div>
+        <p id="lightboxCaption" class="mt-4 text-xs font-outfit font-extrabold text-brand-400 uppercase tracking-wider text-center"></p>
+      </div>
+    </div>
+
+    <div id="feedbackModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm hidden">
+      <div class="w-full max-w-[340px] bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-2xl relative space-y-4">
+        <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+          <h3 class="font-outfit font-extrabold text-sm text-white" data-translate="feedbackTitle">Give Feedback</h3>
+          <button onclick="closeFeedbackModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-sm"></i></button>
+        </div>
+        <div class="space-y-3">
+          <div class="text-center">
+            <p id="feedbackTokenInfo" class="text-xs text-brand-400 font-semibold"></p>
+          </div>
+          <div>
+            <label class="block text-[10px] text-slate-300 font-semibold mb-1" id="feedbackBarberLabel" data-translate="feedbackBarberLabel">Rate Barber</label>
+            <div class="flex space-x-1.5 justify-center py-1 text-xl text-slate-500" id="barberStars">
+              <i class="fa-star fa-regular cursor-pointer transition-all hover:scale-110" onclick="setFeedbackRating('barber', 1)"></i>
+              <i class="fa-star fa-regular cursor-pointer transition-all hover:scale-110" onclick="setFeedbackRating('barber', 2)"></i>
+              <i class="fa-star fa-regular cursor-pointer transition-all hover:scale-110" onclick="setFeedbackRating('barber', 3)"></i>
+              <i class="fa-star fa-regular cursor-pointer transition-all hover:scale-110" onclick="setFeedbackRating('barber', 4)"></i>
+              <i class="fa-star fa-regular cursor-pointer transition-all hover:scale-110" onclick="setFeedbackRating('barber', 5)"></i>
+            </div>
+          </div>
+          <div>
+            <label class="block text-[10px] text-slate-300 font-semibold mb-1" data-translate="feedbackSalonLabel">Rate Salon</label>
+            <div class="flex space-x-1.5 justify-center py-1 text-xl text-slate-500" id="salonStars">
+              <i class="fa-star fa-regular cursor-pointer transition-all hover:scale-110" onclick="setFeedbackRating('salon', 1)"></i>
+              <i class="fa-star fa-regular cursor-pointer transition-all hover:scale-110" onclick="setFeedbackRating('salon', 2)"></i>
+              <i class="fa-star fa-regular cursor-pointer transition-all hover:scale-110" onclick="setFeedbackRating('salon', 3)"></i>
+              <i class="fa-star fa-regular cursor-pointer transition-all hover:scale-110" onclick="setFeedbackRating('salon', 4)"></i>
+              <i class="fa-star fa-regular cursor-pointer transition-all hover:scale-110" onclick="setFeedbackRating('salon', 5)"></i>
+            </div>
+          </div>
+          <div>
+            <label class="block text-[10px] text-slate-300 font-semibold mb-1" data-translate="commentLabel">Comments / Suggestions</label>
+            <textarea id="feedbackCommentInput" rows="2" class="w-full bg-slate-950 border border-slate-800 text-white rounded-xl p-2.5 text-xs focus:outline-none focus:border-brand-500 transition-colors"></textarea>
+          </div>
+        </div>
+        <button onclick="submitFeedback()" class="w-full bg-brand-600 hover:bg-brand-700 text-white py-2.5 rounded-xl text-xs font-bold transition-all shadow-md flex items-center justify-center space-x-1.5">
+          <i class="fa-solid fa-paper-plane"></i>
+          <span data-translate="submitFeedback">Submit Feedback</span>
+        </button>
+      </div>
+    </div>
+    <!-- Simulated Phone Call Overlay -->
+    <div id="phoneCallOverlay" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md hidden">
+      <div class="w-full max-w-[340px] bg-gradient-to-b from-slate-900 to-slate-955 border border-slate-800 rounded-3xl p-6 shadow-2xl relative flex flex-col items-center justify-between min-h-[420px] text-center">
+        <div class="space-y-2 mt-4">
+          <div class="w-20 h-20 bg-brand-500/10 rounded-full flex items-center justify-center border border-brand-500/30 text-brand-400 mx-auto animate-pulse">
+            <i class="fa-solid fa-phone-volume text-3xl"></i>
+          </div>
+          <h3 class="font-outfit font-extrabold text-lg text-white mt-4" data-translate="voiceCallAssistantTitle">ZeroWait Q Voice Assistant</h3>
+          <p id="callStatusText" class="text-xs text-slate-400 animate-pulse">Calling...</p>
+        </div>
+        
+        <!-- Wave animation during voice play -->
+        <div id="callWaveform" class="flex items-center justify-center space-x-1.5 h-16 opacity-0 transition-opacity duration-300">
+          <span class="w-1 bg-brand-500 rounded-full animate-bounce h-8" style="animation-delay: 0.1s"></span>
+          <span class="w-1 bg-brand-500 rounded-full animate-bounce h-12" style="animation-delay: 0.2s"></span>
+          <span class="w-1 bg-brand-500 rounded-full animate-bounce h-6" style="animation-delay: 0.3s"></span>
+          <span class="w-1 bg-brand-500 rounded-full animate-bounce h-14" style="animation-delay: 0.4s"></span>
+          <span class="w-1 bg-brand-500 rounded-full animate-bounce h-8" style="animation-delay: 0.5s"></span>
+        </div>
+
+        <!-- Call Details -->
+        <div class="space-y-1 bg-slate-900/40 p-3.5 rounded-2xl border border-slate-850 w-full mb-4">
+          <p id="callSalonName" class="text-xs font-bold text-white">Salon Name</p>
+          <p id="callMessageSnippet" class="text-[10px] text-slate-400 leading-normal italic px-2">"Hello, this is your appointment reminder..."</p>
+        </div>
+
+        <!-- Call Action Buttons -->
+        <div id="callActionButtons" class="flex justify-center items-center space-x-8 mb-2 w-full">
+          <!-- Red Decline Button -->
+          <button id="declineCallBtn" onclick="endSimulatedCall()" class="w-14 h-14 bg-rose-600 hover:bg-rose-700 text-white rounded-full flex items-center justify-center shadow-lg shadow-rose-500/20 transition-all hover:scale-105 active:scale-95">
+            <i class="fa-solid fa-phone-slash text-xl"></i>
+          </button>
+          <!-- Green Answer Button -->
+          <button id="answerCallBtn" onclick="acceptSimulatedCall()" class="w-14 h-14 bg-emerald-600 hover:bg-emerald-700 text-white rounded-full flex items-center justify-center shadow-lg shadow-emerald-500/20 transition-all hover:scale-105 active:scale-95">
+            <i class="fa-solid fa-phone text-xl animate-bounce"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div id="screen-home" class="flex flex-col h-full w-full overflow-y-auto">
+      <header class="bg-slate-950/95 border-b border-slate-900 px-4 py-3 flex items-center justify-between">
+        <div class="flex items-center space-x-2">
+          <div class="w-9 h-9 bg-slate-900 border border-slate-800 rounded-xl flex items-center justify-center shadow-lg overflow-hidden p-1">
+            <img src="images/logo_symbol_trans.png?v=1.3" class="w-full h-full object-contain">
+          </div>
+          <div>
+            <h1 class="font-outfit font-extrabold text-xl tracking-tight bg-gradient-to-r from-white via-indigo-200 to-brand-500 bg-clip-text text-transparent">ZEROWAIT Q</h1>
+            <p class="text-[9px] text-slate-400 uppercase tracking-widest font-semibold" data-translate="subtitle">Live Salon Token System</p>
+          </div>
+        </div>
+        <div class="flex items-center space-x-2">
+          <button id="headerTrackerBtn" onclick="navigateTo('tracking')" class="hidden bg-emerald-950/60 hover:bg-emerald-900 border border-emerald-800 text-emerald-400 px-2.5 py-1.5 rounded-xl text-[10px] font-bold items-center space-x-1.5 transition-all animate-pulse-slow">
+            <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-ping"></span>
+            <span data-translate="activeTokenTitle">Live</span>
+          </button>
+          <button id="menuTriggerBtn" onclick="toggleHeaderMenu()" class="w-9 h-9 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-center hover:bg-slate-800 text-slate-300 hover:text-white transition-all">
+            <i class="fa-solid fa-bars text-sm"></i>
+          </button>
+        </div>
+      </header>
+      <!-- Dropdown Menu -->
+      <div id="headerMenu" class="absolute top-14 right-4 z-50 w-48 bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl p-2 hidden transform origin-top-right transition-all duration-200 scale-95 opacity-0">
+        <div class="space-y-1">
+          <button onclick="menuNavigate('language')" class="w-full text-left px-3.5 py-2.5 hover:bg-slate-800/60 rounded-xl text-xs font-semibold text-slate-200 flex items-center space-x-2.5 transition-colors">
+            <i class="fa-solid fa-globe text-brand-500 text-sm"></i>
+            <span id="menuLangLabel">हिंदी</span>
+          </button>
+          <button onclick="menuNavigate('history')" class="w-full text-left px-3.5 py-2.5 hover:bg-slate-800/60 rounded-xl text-xs font-semibold text-slate-200 flex items-center space-x-2.5 transition-colors">
+            <i class="fa-solid fa-clock-rotate-left text-indigo-400 text-sm"></i>
+            <span data-translate="historyBtn">History</span>
+          </button>
+          <div class="h-px bg-slate-800/60 my-1"></div>
+          <button onclick="menuNavigate('owner')" class="w-full text-left px-3.5 py-2.5 hover:bg-purple-950/20 hover:text-purple-300 rounded-xl text-xs font-semibold text-purple-400 flex items-center space-x-2.5 transition-colors">
+            <i class="fa-solid fa-key text-sm"></i>
+            <span data-translate="ownerPanelLink">Owner Portal</span>
+          </button>
+          <div class="h-px bg-slate-800/60 my-1"></div>
+          <button onclick="logoutCustomer()" class="w-full text-left px-3.5 py-2.5 hover:bg-rose-950/20 hover:text-rose-300 rounded-xl text-xs font-semibold text-rose-450 flex items-center space-x-2.5 transition-colors">
+            <i class="fa-solid fa-right-from-bracket text-sm"></i>
+            <span>Logout Customer</span>
+          </button>
+        </div>
+      </div>
+      <div class="flex-grow p-4 space-y-4">
+        <div class="flex items-center justify-between">
+          <h2 class="font-outfit font-bold text-base flex items-center space-x-2 text-slate-100">
+            <span class="w-6 h-6 bg-brand-500/20 text-brand-400 rounded-lg flex items-center justify-center text-xs">1</span>
+            <span data-translate="selectSalon">Select a Salon</span>
+          </h2>
+          <span class="text-[10px] text-slate-400">Hisar, Haryana</span>
+        </div>
+        <div class="relative w-full z-30">
+          <div class="relative flex items-center bg-slate-900 border border-slate-800 rounded-xl overflow-hidden px-3 py-2.5 focus-within:border-brand-500 transition-all">
+            <i class="fa-solid fa-magnifying-glass text-slate-400 mr-2.5 text-xs"></i>
+            <input type="text" id="salonSearchInput" oninput="handleSearchInput(this.value)" placeholder="Search salons by name or area..." class="w-full bg-transparent text-white text-xs focus:outline-none placeholder-slate-500">
+            <button onclick="clearSearch()" class="text-slate-500 hover:text-white hidden absolute right-3" id="clearSearchBtn">
+              <i class="fa-solid fa-xmark text-sm"></i>
+            </button>
+          </div>
+          <div id="searchSuggestions" class="absolute top-12 left-0 right-0 bg-slate-900 border border-slate-800 rounded-xl shadow-2xl overflow-hidden hidden max-h-48 overflow-y-auto z-50"></div>
+        </div>
+        <div id="searchNoResults" class="text-xs text-rose-400 hidden font-medium text-center bg-rose-955/20 py-2 rounded-xl border border-rose-900/30"></div>
+        
+        <!-- Sponsored Banner Slider -->
+        <div id="featuredSalonsSlider" class="hidden w-full overflow-x-auto gap-3 pb-2.5 no-scrollbar scroll-smooth flex flex-row snap-x snap-mandatory flex-shrink-0"></div>
+        
+        <div id="map" class="w-full h-[240px] rounded-2xl overflow-hidden shadow-lg border border-slate-800 z-10"></div>
+        <div class="flex items-center justify-between mt-2 flex-shrink-0">
+          <h2 class="font-outfit font-bold text-sm flex items-center space-x-2 text-slate-100">
+            <span class="w-5 h-5 bg-brand-500/20 text-brand-400 rounded-lg flex items-center justify-center text-[10px]"><i class="fa-solid fa-store"></i></span>
+            <span data-translate="salonsListTitle">Nearby Salons / सैलून सूची</span>
+          </h2>
+          <span id="salonsCountLabel" class="text-[10px] text-slate-500 font-semibold">4 Salons</span>
+        </div>
+
+        <div id="salonsListContainer" class="space-y-3 pb-4">
+          <!-- Dynamically populated list of salons -->
+        </div>
+      </div>
+      <footer class="bg-slate-950/90 border-t border-slate-900 p-4 flex flex-col space-y-2">
+        <div class="text-[9px] text-center text-slate-500 flex items-center justify-center space-x-1.5">
+          <i class="fa-solid fa-shield-halved text-slate-600"></i>
+          <span data-translate="footerText">Only you see your token history on this device.</span>
+          <button onclick="openLoginModal()" class="text-slate-700 hover:text-slate-400 focus:outline-none transition-colors ml-1.5" title="Owner Login">
+            <i class="fa-solid fa-key text-[10px]"></i>
+          </button>
+        </div>
+      </footer>
+    </div>
+    <div id="screen-details" class="hidden flex-col h-full w-full overflow-y-auto pb-48">
+      <header class="bg-slate-955/95 border-b border-slate-900/80 px-4 py-3 flex items-center space-x-3 sticky top-0 z-45">
+        <button onclick="navigateTo('home')" class="w-8 h-8 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center hover:bg-slate-850 transition-colors">
+          <i class="fa-solid fa-arrow-left text-slate-300 text-xs"></i>
+        </button>
+        <div class="min-w-0">
+          <h2 id="detailsSalonName" class="font-outfit font-extrabold text-sm text-white truncate">Salon Name</h2>
+          <p id="detailsSalonSubtitleHeader" class="text-[9px] text-slate-450 flex items-center space-x-1 truncate">
+            <span class="text-amber-400 font-bold"><i class="fa-solid fa-star text-[8px] mr-0.5"></i>4.8</span>
+            <span>· Salon ·</span>
+            <span id="detailsStatusHeaderBadge" class="text-emerald-400 font-bold">Open</span>
+          </p>
+        </div>
+      </header>
+
+      <!-- Tabs Navigation -->
+      <div class="flex border-b border-slate-900 text-[11px] bg-slate-955/90 backdrop-blur sticky top-12 z-40">
+        <button id="tabOverviewBtn" onclick="switchDetailTab('overview')" class="flex-1 text-center py-3 font-bold border-b-2 border-brand-500 text-white transition-all uppercase tracking-wider">Overview</button>
+        <button id="tabReviewsBtn" onclick="switchDetailTab('reviews')" class="flex-1 text-center py-3 font-bold text-slate-450 hover:text-slate-200 transition-all border-b-2 border-transparent uppercase tracking-wider">Reviews</button>
+        <button id="tabPhotosBtn" onclick="switchDetailTab('photos')" class="flex-1 text-center py-3 font-bold text-slate-455 hover:text-slate-200 transition-all border-b-2 border-transparent uppercase tracking-wider">Photos</button>
+      </div>
+
+      <!-- Tab Content: Overview -->
+      <div id="detailTabOverview" class="p-4 space-y-4">
+        <!-- Large Salon Image -->
+        <div class="w-full h-[180px] rounded-2xl overflow-hidden shadow-lg border border-slate-800 bg-slate-950 relative">
+          <img id="detailsSalonImage" src="/images/default_salon.png" alt="Salon Photo" class="w-full h-full object-cover">
+          <div class="absolute inset-0 bg-gradient-to-t from-slate-950/80 to-transparent"></div>
+        </div>
+
+        <!-- Quick Action Buttons -->
+        <div class="flex justify-between items-center py-2.5 px-1 bg-slate-900/40 border border-slate-850 rounded-2xl text-[9px] text-slate-400 text-center font-bold">
+          <a id="detailCallLink" href="tel:" class="flex flex-col items-center space-y-1 hover:text-white transition-colors flex-1">
+            <div class="w-9 h-9 rounded-full bg-slate-950 border border-slate-800 flex items-center justify-center text-brand-400 hover:scale-105 transition-transform"><i class="fa-solid fa-phone text-xs"></i></div>
+            <span>CALL</span>
+          </a>
+          <a id="detailDirectionsLink" href="" target="_blank" class="flex flex-col items-center space-y-1 hover:text-white transition-colors flex-1">
+            <div class="w-9 h-9 rounded-full bg-slate-950 border border-slate-800 flex items-center justify-center text-brand-400 hover:scale-105 transition-transform"><i class="fa-solid fa-diamond-turn-right text-xs"></i></div>
+            <span>DIRECTIONS</span>
+          </a>
+          <a id="detailWhatsappLink" href="" target="_blank" class="flex flex-col items-center space-y-1 hover:text-white transition-colors flex-1">
+            <div class="w-9 h-9 rounded-full bg-slate-950 border border-slate-800 flex items-center justify-center text-emerald-500 hover:scale-105 transition-transform"><i class="fa-brands fa-whatsapp text-sm"></i></div>
+            <span>WHATSAPP</span>
+          </a>
+          <button onclick="shareSalonLink()" class="flex flex-col items-center space-y-1 hover:text-white transition-colors flex-1">
+            <div class="w-9 h-9 rounded-full bg-slate-950 border border-slate-800 flex items-center justify-center text-brand-400 hover:scale-105 transition-transform"><i class="fa-solid fa-share-nodes text-xs"></i></div>
+            <span>SHARE</span>
+          </button>
+          <button id="detailSaveBtn" onclick="toggleSaveSalon()" class="flex flex-col items-center space-y-1 hover:text-white transition-colors flex-1">
+            <div id="detailSaveIconContainer" class="w-9 h-9 rounded-full bg-slate-950 border border-slate-800 flex items-center justify-center text-brand-400 hover:scale-105 transition-transform"><i class="fa-regular fa-bookmark text-xs" id="detailSaveIcon"></i></div>
+            <span id="detailSaveLabel">SAVE</span>
+          </button>
+        </div>
+
+        <!-- Info Details -->
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-3.5 space-y-3">
+          <div class="flex items-start space-x-3 text-xs text-slate-300">
+            <i class="fa-regular fa-clock text-brand-400 w-4 text-center mt-0.5 text-sm"></i>
+            <div class="flex-grow">
+              <span id="detailStatusText" class="font-bold text-emerald-400">Open 24 hours</span>
+              <p class="text-[10px] text-slate-500 mt-0.5">Live token counter: dynamic estimation</p>
+            </div>
+          </div>
+          <div class="flex items-start space-x-3 text-xs text-slate-300 border-t border-slate-950 pt-3">
+            <i class="fa-solid fa-location-dot text-brand-400 w-4 text-center mt-0.5 text-sm"></i>
+            <span id="detailAddressText" class="leading-relaxed">PLA Market, Hisar</span>
+          </div>
+          <div class="flex items-start space-x-3 text-xs text-slate-300 border-t border-slate-950 pt-3">
+            <i class="fa-solid fa-phone text-brand-400 w-4 text-center mt-0.5 text-sm"></i>
+            <span id="detailPhoneText" class="leading-relaxed">+91 8888888888</span>
+          </div>
+          <div id="detailsOfferRow" class="bg-brand-950/40 border border-brand-900/30 rounded-xl p-3 flex items-start space-x-2.5 mt-2">
+            <i class="fa-solid fa-gift text-brand-400 mt-0.5 animate-bounce-slow"></i>
+            <div class="flex-grow">
+              <p class="text-[9px] font-bold text-brand-400 uppercase tracking-wider" data-translate="currentOffer">Special Offer</p>
+              <p id="detailsOfferText" class="text-xs text-slate-300 font-medium leading-relaxed">Flat 20% off!</p>
+            </div>
+          </div>
+          <!-- Combo Offer Banner -->
+          <div id="detailsComboBanner" class="hidden bg-emerald-950/40 border border-emerald-900/30 rounded-xl p-3 flex items-start space-x-2.5 mt-2">
+            <i class="fa-solid fa-wand-magic-sparkles text-emerald-400 mt-0.5 animate-pulse-slow"></i>
+            <div class="flex-grow">
+              <p class="text-[9px] font-bold text-emerald-400 uppercase tracking-wider">Combo Offer / कॉम्बो ऑफर</p>
+              <p id="detailsComboText" class="text-xs text-slate-300 font-medium leading-relaxed"></p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Booking & Durations Warning Alert -->
+        <div id="salonClosedWarning" class="hidden bg-rose-955/20 border border-rose-900/30 text-rose-455 text-xs font-semibold p-3.5 rounded-xl text-center flex items-center justify-center space-x-2">
+          <i class="fa-solid fa-circle-exclamation"></i>
+          <span id="salonClosedWarningText">This salon is closed today. Booking is not available.</span>
+        </div>
+        <div id="emergencySlotAlert" class="hidden bg-amber-955/20 border border-amber-900/30 text-amber-400 text-xs font-semibold p-3.5 rounded-xl text-center flex flex-col items-center justify-center space-y-1 animate-pulse-slow">
+          <div class="flex items-center space-x-2">
+            <i class="fa-solid fa-bell animate-bounce"></i>
+            <span id="emergencySlotAlertText">🚨 Express Slot Available! Book VIP to skip queue.</span>
+          </div>
+        </div>
+
+        <!-- Barber Selection Section -->
+        <section id="barberSection" class="space-y-2.5">
+          <h3 class="font-outfit font-bold text-sm text-slate-100" data-translate="barbersHeader">Choose Your Barber</h3>
+          <div id="barberRow" class="flex overflow-x-auto gap-3 pb-1 no-scrollbar scroll-smooth"></div>
+        </section>
+
+        <!-- Services Selection Section -->
+        <section id="servicesSection" class="space-y-3">
+          <div class="flex justify-between items-center">
+            <h3 class="font-outfit font-bold text-sm text-slate-100" data-translate="servicesHeader">Select Services</h3>
+            <span id="serviceDurationSum" class="text-[10px] font-semibold text-brand-400 bg-brand-955/80 px-2 py-0.5 rounded border border-brand-900/40 hidden">
+              Duration: 0 min
+            </span>
+          </div>
+          <div id="servicesGrid" class="grid grid-cols-2 gap-2.5"></div>
+        </section>
+      </div>
+
+      <!-- Tab Content: Reviews -->
+      <div id="detailTabReviews" class="p-4 space-y-4 hidden">
+        <!-- Review Summary Bar Chart -->
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex items-center justify-between space-x-4">
+          <div class="text-center w-28 flex-shrink-0">
+            <h2 id="reviewSummaryNumber" class="text-5xl font-outfit font-extrabold text-white">4.8</h2>
+            <div id="reviewSummaryStars" class="flex justify-center text-amber-400 text-xs py-1">
+              <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star-half-stroke"></i>
+            </div>
+            <p id="reviewSummaryCountLabel" class="text-[10px] text-slate-500 font-medium mt-0.5">3 reviews</p>
+          </div>
+          <div class="flex-grow space-y-1 text-[9px] text-slate-400">
+            <div class="flex items-center space-x-2">
+              <span class="w-2 flex-shrink-0 text-right">5</span>
+              <div class="flex-grow bg-slate-950 h-1.5 rounded-full overflow-hidden">
+                <div id="reviewBar5" class="bg-amber-450 h-full w-[80%] rounded-full"></div>
+              </div>
+            </div>
+            <div class="flex items-center space-x-2">
+              <span class="w-2 flex-shrink-0 text-right">4</span>
+              <div class="flex-grow bg-slate-950 h-1.5 rounded-full overflow-hidden">
+                <div id="reviewBar4" class="bg-amber-450 h-full w-[20%] rounded-full"></div>
+              </div>
+            </div>
+            <div class="flex items-center space-x-2">
+              <span class="w-2 flex-shrink-0 text-right">3</span>
+              <div class="flex-grow bg-slate-950 h-1.5 rounded-full overflow-hidden">
+                <div id="reviewBar3" class="bg-amber-450 h-full w-[0%] rounded-full"></div>
+              </div>
+            </div>
+            <div class="flex items-center space-x-2">
+              <span class="w-2 flex-shrink-0 text-right">2</span>
+              <div class="flex-grow bg-slate-950 h-1.5 rounded-full overflow-hidden">
+                <div id="reviewBar2" class="bg-amber-450 h-full w-[0%] rounded-full"></div>
+              </div>
+            </div>
+            <div class="flex items-center space-x-2">
+              <span class="w-2 flex-shrink-0 text-right">1</span>
+              <div class="flex-grow bg-slate-950 h-1.5 rounded-full overflow-hidden">
+                <div id="reviewBar1" class="bg-amber-450 h-full w-[0%] rounded-full"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <h3 class="font-outfit font-bold text-sm text-slate-100">Customer Review Summary</h3>
+        <div id="detailReviewsList" class="space-y-3">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+
+      <!-- Tab Content: Photos -->
+      <div id="detailTabPhotos" class="p-4 space-y-4 hidden">
+        <div class="flex justify-between items-center">
+          <h3 class="font-outfit font-bold text-sm text-slate-100" data-translate="photoGallery">Photo Gallery</h3>
+          <span class="text-[9px] bg-slate-800 text-slate-400 border border-slate-700 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider flex items-center space-x-1">
+            <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-ping"></span>
+            <span data-translate="autoScroll">Auto Scroll</span>
+          </span>
+        </div>
+        <div class="vertical-marquee-container relative overflow-hidden rounded-2xl h-[340px] border border-slate-900 bg-slate-955/20 px-2 py-1">
+          <div class="pointer-events-none absolute inset-x-0 top-0 h-14 bg-gradient-to-b from-slate-950 to-transparent z-10"></div>
+          <div class="pointer-events-none absolute inset-x-0 bottom-0 h-14 bg-gradient-to-t from-slate-950 to-transparent z-10"></div>
+          
+          <div class="vertical-marquee-col marquee-down h-full">
+            <div class="marquee-track flex flex-col gap-3" id="photoCol1"></div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Sticky Booking Action Footer -->
+      <footer id="bookingFooterBar" class="absolute bottom-0 left-0 right-0 z-35 bg-slate-955/95 backdrop-blur-md border-t border-slate-900 p-4 flex flex-col space-y-2">
+
+        <div id="bookingHelperText" class="text-[11px] text-center text-slate-400 font-medium">
+          Select a salon, barber, and services to book a token.
+        </div>
+        <button id="bookTokenBtn" disabled onclick="openBookingModal()" class="w-full bg-slate-800 text-slate-500 py-3 rounded-xl font-bold text-sm tracking-wide transition-all duration-300 cursor-not-allowed flex items-center justify-center space-x-2 shadow-lg">
+          <i class="fa-solid fa-ticket"></i>
+          <span data-translate="bookTokenBtn">Book Your Token</span>
+        </button>
+      </footer>
+    </div>
+    <div id="screen-confirm" class="hidden flex-col h-full w-full overflow-y-auto">
+      <header class="bg-slate-950/95 border-b border-slate-900 px-4 py-3 flex items-center space-x-3">
+        <button onclick="navigateTo('details')" class="w-8 h-8 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center hover:bg-slate-850 transition-colors">
+          <i class="fa-solid fa-arrow-left text-slate-300 text-xs"></i>
+        </button>
+        <h2 class="font-outfit font-bold text-sm text-white" data-translate="bookingModalTitle">Confirm Booking</h2>
+      </header>
+      <div class="flex-grow p-4 space-y-4 pb-20">
+        <div class="bg-brand-950/30 border border-brand-900/40 rounded-2xl p-4 flex items-start space-x-3">
+          <div class="w-8 h-8 rounded-lg bg-brand-500/20 text-brand-400 flex items-center justify-center flex-shrink-0">
+            <i class="fa-solid fa-gift text-sm"></i>
+          </div>
+          <div>
+            <p class="text-[10px] font-bold text-brand-400 uppercase tracking-wider" data-translate="currentOffer">Special Offer</p>
+            <p id="modalOfferText" class="text-xs text-slate-200 font-medium mt-0.5">Flat 20% off on Hair Coloring!</p>
+          </div>
+        </div>
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-4">
+          <div>
+            <label class="block text-xs text-slate-300 font-semibold mb-1" data-translate="mobileLabel">Mobile Number (10 digits)</label>
+            <div class="relative">
+              <span class="absolute left-3.5 top-2.5 text-slate-400 text-sm font-semibold">+91</span>
+              <input type="tel" id="mobileNumberInput" name="mobile" autocomplete="tel" maxlength="16" placeholder="9876543210" class="w-full bg-slate-950 border border-slate-800 text-white rounded-xl pl-12 pr-3 py-2.5 text-sm focus:outline-none focus:border-brand-500 transition-colors">
+            </div>
+          </div>
+          <div>
+            <label class="block text-xs text-slate-300 font-semibold mb-1" data-translate="travelLabel">Travel Time to Salon (mins)</label>
+            <input type="number" id="travelTimeInput" min="1" max="180" placeholder="15" class="w-full bg-slate-950 border border-slate-800 text-white rounded-xl px-3.5 py-2.5 text-sm focus:outline-none focus:border-brand-500 transition-colors">
+          </div>
+          <div class="flex items-center space-x-3 pt-3 border-t border-slate-950">
+            <input type="checkbox" id="emergencyBookingToggle" class="w-4 h-4 text-brand-600 bg-slate-950 border-slate-800 rounded focus:ring-brand-500 cursor-pointer">
+            <div class="flex-grow">
+              <label for="emergencyBookingToggle" class="text-xs font-bold text-amber-400 flex items-center space-x-1 cursor-pointer">
+                <i class="fa-solid fa-crown text-[10px] animate-pulse"></i>
+                <span data-translate="emergencyBookingLabel">Book as Emergency / VIP (+₹100)</span>
+              </label>
+              <p class="text-[9px] text-slate-400 mt-0.5" data-translate="emergencyBookingDesc">Grabs cancellation slot or top priority</p>
+            </div>
+          </div>
+        </div>
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-3.5">
+          <p class="text-[10px] text-brand-400 uppercase tracking-wider font-extrabold pb-2 border-b border-slate-950" id="modalSalonLabel">Vogue Studio</p>
+          <div class="flex justify-between items-center text-xs">
+            <span class="text-slate-400" id="modalBarberLabel">Barber: Rajiv Sharma</span>
+            <span class="text-slate-200 font-semibold" id="modalDurationLabel">35 mins</span>
+          </div>
+          <div class="text-[11px] text-slate-300 mt-1.5 border-t border-slate-800 pt-1.5" id="modalServicesList"></div>
+        </div>
+        <button onclick="confirmBooking()" class="w-full bg-gradient-to-r from-brand-600 to-indigo-500 hover:from-brand-700 hover:to-indigo-600 text-white py-3 rounded-xl font-bold text-sm shadow-lg hover:shadow-brand-500/20 transition-all flex items-center justify-center space-x-2">
+          <i class="fa-solid fa-circle-check"></i>
+          <span data-translate="confirmBtn">Confirm & Book</span>
+        </button>
+      </div>
+    </div>
+    <div id="screen-tracking" class="hidden flex-col h-full w-full overflow-y-auto">
+      <header class="bg-slate-950/95 border-b border-slate-900 px-4 py-3 flex items-center space-x-3">
+        <button onclick="navigateTo('home')" class="w-8 h-8 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center hover:bg-slate-850 transition-colors">
+          <i class="fa-solid fa-arrow-left text-slate-300 text-xs"></i>
+        </button>
+        <h2 class="font-outfit font-bold text-sm text-white" data-translate="activeTokenTitle">Live Tracking</h2>
+      </header>
+      <div id="trackerListContainer" class="flex-grow p-4 space-y-4 pb-20"></div>
+    </div>
+    <div id="screen-history" class="hidden flex-col h-full w-full overflow-y-auto">
+      <header class="bg-slate-950/95 border-b border-slate-900 px-4 py-3 flex items-center space-x-3">
+        <button onclick="navigateTo('home')" class="w-8 h-8 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center hover:bg-slate-850 transition-colors">
+          <i class="fa-solid fa-arrow-left text-slate-300 text-xs"></i>
+        </button>
+        <h2 class="font-outfit font-bold text-sm text-white" data-translate="historyModalTitle">Booking History</h2>
+      </header>
+      <div class="flex-grow p-4 space-y-4 pb-20 flex flex-col justify-between">
+        <div class="flex bg-slate-900 rounded-xl p-1 text-xs border border-slate-800 flex-shrink-0">
+          <button id="histTabAll" onclick="setHistoryFilter('all')" class="flex-grow flex-shrink-0 text-center py-1.5 rounded-lg font-bold bg-brand-600 text-white shadow-md transition-all">All</button>
+          <button id="histTabActive" onclick="setHistoryFilter('active')" class="flex-grow flex-shrink-0 text-center py-1.5 rounded-lg font-bold text-slate-400 hover:text-slate-200 transition-all">Active</button>
+          <button id="histTabCompleted" onclick="setHistoryFilter('completed')" class="flex-grow flex-shrink-0 text-center py-1.5 rounded-lg font-bold text-slate-400 hover:text-slate-200 transition-all">Completed</button>
+          <button id="histTabCancelled" onclick="setHistoryFilter('cancelled')" class="flex-grow flex-shrink-0 text-center py-1.5 rounded-lg font-bold text-slate-400 hover:text-slate-200 transition-all">Cancelled</button>
+        </div>
+        <div id="historyListContainer" class="space-y-3 flex-grow overflow-y-auto no-scrollbar max-h-[520px]"></div>
+        <div class="pt-3 border-t border-slate-800 flex justify-between items-center">
+          <button onclick="clearHistory()" class="bg-rose-950/40 hover:bg-rose-900 border border-rose-900 text-rose-450 px-4 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center space-x-1.5">
+            <i class="fa-solid fa-trash-can"></i>
+            <span data-translate="clearHistoryBtn">Clear History</span>
+          </button>
+          <button onclick="navigateTo('home')" class="bg-slate-850 hover:bg-slate-800 border border-slate-800 text-slate-350 px-4 py-2.5 rounded-xl text-xs font-bold transition-all">
+            <span data-translate="cancelBtn">Close</span>
+          </button>
+        </div>
+      </div>
+    </div>
+    <button id="ownerPanelFAB" onclick="toggleOwnerPanel()" class="hidden fixed md:absolute bottom-20 right-4 z-40 bg-gradient-to-tr from-indigo-600 via-purple-600 to-pink-500 text-white w-12 h-12 rounded-full flex items-center justify-center shadow-2xl transition-all duration-300 transform hover:scale-110 active:scale-95 animate-pulse-slow">
+      <i class="fa-solid fa-gears text-lg" id="ownerGiftIcon"></i>
+    </button>
+    <div id="screen-owner" class="hidden flex-col h-full w-full overflow-y-auto">
+      <header class="bg-slate-950/95 border-b border-slate-900 px-4 py-3 flex items-center justify-between">
+        <div class="flex items-center space-x-3">
+          <button onclick="navigateTo('home')" class="w-8 h-8 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center hover:bg-slate-850 transition-colors">
+            <i class="fa-solid fa-arrow-left text-slate-300 text-xs"></i>
+          </button>
+          <h2 id="ownerHeaderTitle" class="font-outfit font-bold text-sm text-white" data-translate="ownerPanelTitle">Salon Owner Panel</h2>
+        </div>
+        <button onclick="logoutOwner()" class="bg-rose-950/50 hover:bg-rose-900 border border-rose-900 text-rose-450 px-2.5 py-1.5 rounded-lg text-[10px] font-bold transition-all" data-translate="logoutBtn">Logout</button>
+      </header>
+      <div class="p-4 space-y-4 flex-grow pb-24">
+        <div class="flex bg-slate-900 rounded-xl p-1 text-xs border border-slate-800 flex-shrink-0 overflow-x-auto no-scrollbar scroll-smooth whitespace-nowrap">
+          <button id="tabAnalyticsBtn" onclick="switchOwnerTab('analytics')" class="flex-1 text-center py-2 rounded-lg font-bold bg-brand-600 text-white shadow" data-translate="ownerAnalytics">Analytics</button>
+          <button id="tabBarbersBtn" onclick="switchOwnerTab('barbers')" class="flex-1 text-center py-2 rounded-lg font-bold text-slate-400 hover:text-slate-200" data-translate="ownerBarbers">Barbers</button>
+          <button id="tabServicesBtn" onclick="switchOwnerTab('services')" class="flex-1 text-center py-2 rounded-lg font-bold text-slate-400 hover:text-slate-200" data-translate="ownerServices">Services</button>
+          <button id="tabOffersBtn" onclick="switchOwnerTab('offers')" class="flex-1 text-center py-2 rounded-lg font-bold text-slate-400 hover:text-slate-200" data-translate="ownerOffers">Offers</button>
+          <button id="tabApprovalsBtn" onclick="switchOwnerTab('approvals')" class="flex-1 text-center py-2 rounded-lg font-bold text-slate-400 hover:text-slate-200 hidden" data-translate="ownerApprovals">Approvals</button>
+        </div>
+        <div id="tabAnalytics" class="space-y-4">
+          <div class="grid grid-cols-3 gap-2">
+            <div class="bg-slate-900 border border-slate-800 p-3 rounded-xl text-center">
+              <span class="text-[9px] text-slate-400 font-bold uppercase tracking-wider">Barbers</span>
+              <p id="ownerTotalBarbers" class="text-xl font-bold font-outfit text-white mt-1">8</p>
+            </div>
+            <div class="bg-slate-900 border border-slate-800 p-3 rounded-xl text-center">
+              <span class="text-[9px] text-slate-400 font-bold uppercase tracking-wider">Services</span>
+              <p id="ownerTotalServices" class="text-xl font-bold font-outfit text-white mt-1">356</p>
+            </div>
+            <div class="bg-slate-900 border border-slate-800 p-3 rounded-xl text-center">
+              <span class="text-[9px] text-slate-400 font-bold uppercase tracking-wider">Customers</span>
+              <p id="ownerTotalCustomers" class="text-xl font-bold font-outfit text-white mt-1">284</p>
+            </div>
+          </div>
+          <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
+            <div class="px-3 py-2.5 bg-slate-950/60 border-b border-slate-800 flex justify-between items-center">
+              <h4 class="text-xs font-bold text-white">Barber Performance</h4>
+            </div>
+            <div class="overflow-x-auto">
+              <table class="w-full text-left border-collapse">
+                <thead>
+                  <tr class="bg-slate-950/20 text-[9px] text-slate-400 uppercase border-b border-slate-900 font-extrabold">
+                    <th class="py-2 pl-3">Barber</th>
+                    <th class="py-2 text-center">Haircut</th>
+                    <th class="py-2 text-center">Beard</th>
+                    <th class="py-2 text-center">Wash</th>
+                    <th class="py-2 text-center">Massage</th>
+                    <th class="py-2 text-center pr-3">Total</th>
+                  </tr>
+                </thead>
+                <tbody id="barberAnalyticsTableBody"></tbody>
+              </table>
+            </div>
+          </div>
+          <div class="bg-indigo-950/20 border border-brand-900/30 rounded-xl p-3.5 flex items-center space-x-3.5">
+            <div class="w-10 h-10 bg-brand-500/20 text-brand-400 rounded-full flex items-center justify-center text-lg">
+              <i class="fa-solid fa-crown"></i>
+            </div>
+            <div>
+              <p class="text-[10px] text-brand-400 uppercase tracking-wider font-bold" data-translate="mostActive">Most Active Barber</p>
+              <p id="mostActiveBarberVal" class="text-sm font-bold text-white">None</p>
+            </div>
+          </div>
+          <div class="bg-indigo-950/20 border border-brand-900/30 rounded-xl p-3 flex justify-between items-center mt-2">
+            <div class="text-center flex-1">
+              <span class="text-[9px] text-brand-400 font-bold uppercase tracking-wider" data-translate="avgSalonRating">Avg Salon Rating</span>
+              <p id="ownerAvgSalonRating" class="text-sm font-bold text-white mt-0.5">0.0 / 5</p>
+            </div>
+            <div class="text-center flex-1 border-l border-slate-900">
+              <span class="text-[9px] text-brand-400 font-bold uppercase tracking-wider" data-translate="avgBarberRating">Avg Barber Rating</span>
+              <p id="ownerAvgBarberRating" class="text-sm font-bold text-white mt-0.5">0.0 / 5</p>
+            </div>
+          </div>
+          <div class="bg-slate-900 border border-slate-800 rounded-xl overflow-hidden mt-2">
+            <div class="px-3 py-2 bg-slate-950/60 border-b border-slate-800 flex justify-between items-center">
+              <h4 class="text-xs font-bold text-white" data-translate="recentReviews">Customer Reviews & Ratings</h4>
+            </div>
+            <div id="ownerReviewsContainer" class="p-3 space-y-2 max-h-48 overflow-y-auto pr-1 no-scrollbar text-[11px]"></div>
+          </div>
+        </div>
+        <div id="tabBarbers" class="hidden space-y-4">
+          <div class="border-b border-slate-800 pb-3 space-y-3">
+            <p class="text-xs font-bold text-slate-350">Register New Barber</p>
+            <div class="space-y-2">
+              <div>
+                <label class="block text-[9px] text-slate-400 uppercase mb-0.5">Barber Name</label>
+                <input type="text" id="newBarberName" placeholder="e.g. Ramesh Sen" class="w-full bg-slate-950 border border-slate-800 text-white text-xs rounded-lg px-2.5 py-1.5 focus:outline-none">
+              </div>
+              <div class="grid grid-cols-2 gap-2">
+                <div>
+                  <label class="block text-[9px] text-slate-400 uppercase mb-0.5">Mobile Number</label>
+                  <input type="tel" id="newBarberMobile" name="barberMobile" autocomplete="tel" maxlength="16" placeholder="e.g. 9826098765" class="w-full bg-slate-950 border border-slate-800 text-white text-xs rounded-lg px-2.5 py-1.5 focus:outline-none">
+                </div>
+                <div>
+                  <label class="block text-[9px] text-slate-400 uppercase mb-0.5">Experience (years)</label>
+                  <input type="number" id="newBarberExp" min="0" max="60" value="3" class="w-full bg-slate-950 border border-slate-800 text-white text-xs rounded-lg px-2.5 py-1.5 focus:outline-none">
+                </div>
+              </div>
+            </div>
+            <button onclick="saveOwnerBarber()" class="w-full bg-brand-600 hover:bg-brand-700 text-white py-2 rounded-lg text-xs font-bold transition-all shadow-md">
+              Register Barber
+            </button>
+          </div>
+          <div class="space-y-2">
+            <p class="text-xs font-bold text-slate-300">Registered Barbers</p>
+            <div id="ownerBarbersListContainer" class="space-y-2 max-h-56 overflow-y-auto pr-1 no-scrollbar"></div>
+          </div>
+        </div>
+        <div id="tabServices" class="hidden space-y-4">
+          <div id="ownerSalonSelectorContainer">
+            <label class="block text-[10px] text-slate-400 uppercase tracking-wider font-semibold mb-1">Select Salon</label>
+            <select id="ownerSalonSelector" onchange="renderOwnerServicesControl()" class="w-full bg-slate-950 border border-slate-800 text-white text-xs rounded-xl p-2.5 focus:outline-none focus:border-brand-500"></select>
+          </div>
+          <div class="border-t border-slate-800 pt-3">
+            <p class="text-xs font-bold text-slate-300 mb-2">Active Services Config</p>
+            <div id="ownerActiveServicesList" class="space-y-2 max-h-40 overflow-y-auto pr-1 no-scrollbar"></div>
+          </div>
+          <div class="border-t border-slate-800 pt-3 space-y-3">
+            <p class="text-xs font-bold text-slate-300" data-translate="addService">Add New Service</p>
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <label class="block text-[9px] text-slate-400 uppercase mb-0.5" data-translate="serviceNameEn">Name (EN)</label>
+                <input type="text" id="newServiceEn" placeholder="e.g. Facial" class="w-full bg-slate-950 border border-slate-800 text-white text-xs rounded-lg px-2.5 py-1.5 focus:outline-none">
+              </div>
+              <div>
+                <label class="block text-[9px] text-slate-400 uppercase mb-0.5" data-translate="serviceNameHi">Name (HI)</label>
+                <input type="text" id="newServiceHi" placeholder="जैसे कि फेशियल" class="w-full bg-slate-950 border border-slate-800 text-white text-xs rounded-lg px-2.5 py-1.5 focus:outline-none">
+              </div>
+            </div>
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <label class="block text-[9px] text-slate-400 uppercase mb-0.5" data-translate="selectIcon">Select Icon</label>
+                <select id="newServiceIcon" class="w-full bg-slate-950 border border-slate-800 text-white text-xs rounded-lg px-2.5 py-1.5 focus:outline-none">
+                  <option value="fa-scissors">Scissors ✂️</option>
+                  <option value="fa-user-tie">Groom 🤵</option>
+                  <option value="fa-soap">Soap 🧼</option>
+                  <option value="fa-spa">Spa 💆</option>
+                  <option value="fa-paint-brush">Paint 🎨</option>
+                  <option value="fa-wind">Wind 💨</option>
+                  <option value="fa-hot-tub-person">Hot Tub 🧖</option>
+                  <option value="fa-eye-dropper">Tweezers 👁️</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-[9px] text-slate-400 uppercase mb-0.5">Price / दर (₹)</label>
+                <input type="number" id="newServicePrice" min="0" placeholder="e.g. 100" class="w-full bg-slate-950 border border-slate-800 text-white text-xs rounded-lg px-2.5 py-1.5 focus:outline-none">
+              </div>
+            </div>
+            <div id="newServiceBarberTimes" class="bg-slate-950 p-3 rounded-xl space-y-2">
+              <p class="text-[10px] text-brand-400 font-bold uppercase tracking-wider" data-translate="barbersDurations">Service Time (mins)</p>
+              <div id="newServiceBarbersInputsList" class="space-y-2 text-xs"></div>
+            </div>
+            <button onclick="saveOwnerService()" class="w-full bg-brand-600 hover:bg-brand-700 text-white py-2 rounded-lg text-xs font-bold transition-all shadow-md">
+              Save Service
+            </button>
+          </div>
+        </div>
+        <div id="tabOffers" class="hidden space-y-4">
+          <div id="ownerStatusSelectContainer">
+            <label class="block text-[10px] text-slate-400 uppercase tracking-wider font-semibold mb-1">Select Salon Status</label>
+            <select id="ownerSalonStatusInput" class="w-full bg-slate-950 border border-slate-800 text-white text-xs rounded-xl p-2.5 focus:outline-none focus:border-brand-500">
+              <option value="open">Open (चालू)</option>
+              <option value="closed">Closed (बंद)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-[11px] text-slate-400 uppercase tracking-wider font-semibold mb-1" data-translate="editOfferLabel">Edit Active Offer Text</label>
+            <textarea id="editOfferInput" rows="3" class="w-full bg-slate-950 border border-slate-800 text-white text-xs rounded-xl p-3 focus:outline-none focus:border-brand-500 transition-colors placeholder-slate-600" placeholder="Type new offer message..."></textarea>
+          </div>
+          <!-- Combo Offer Builder Section -->
+          <div class="border-t border-slate-800 pt-3 space-y-3">
+            <div class="flex justify-between items-center">
+              <label class="block text-[11px] text-slate-400 uppercase tracking-wider font-semibold">🎁 Config Combo Offer / कॉम्बो ऑफर</label>
+              <label class="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" id="ownerComboActiveInput" class="sr-only peer">
+                <div class="w-9 h-5 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-slate-400 after:border-slate-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-600 peer-checked:after:bg-white"></div>
+                <span class="ml-2 text-[10px] font-bold text-slate-300">Active</span>
+              </label>
+            </div>
+            
+            <div id="comboBuilderFields" class="space-y-3 bg-slate-950 p-3 rounded-xl border border-slate-900">
+              <div>
+                <span class="block text-[9px] text-brand-400 font-bold uppercase tracking-wider mb-1.5">1. Select Trigger Services / सेवाएं चुनें:</span>
+                <div id="ownerComboTriggersContainer" class="grid grid-cols-2 gap-2 text-xs text-slate-300 max-h-28 overflow-y-auto pr-1 no-scrollbar">
+                  <!-- Dynamically filled with checkboxes -->
+                </div>
+              </div>
+              
+              <div class="border-t border-slate-900/50 pt-2.5">
+                <label class="block text-[9px] text-brand-400 font-bold uppercase tracking-wider mb-1">2. Select Free Reward Service / मुफ्त सेवा:</label>
+                <select id="ownerComboRewardInput" class="w-full bg-slate-900 border border-slate-850 text-white text-xs rounded-lg p-2 focus:outline-none">
+                  <!-- Dynamically filled with options -->
+                </select>
+              </div>
+            </div>
+          </div>
+          <!-- Promo Ad Banner Section -->
+          <div class="border-t border-slate-800 pt-3 space-y-3">
+            <span class="block text-[11px] text-slate-400 uppercase tracking-wider font-semibold">📢 Salon Ad Banner Promotion / विज्ञापन बैनर</span>
+            <div class="bg-slate-950 p-3 rounded-xl border border-slate-900 space-y-3">
+              <div>
+                <div class="flex justify-between text-[10px] text-slate-400 font-bold mb-1">
+                  <span>Milestone Progress (टोकन लक्ष्य)</span>
+                  <span id="ownerAdProgressText">0 / 100 Completed</span>
+                </div>
+                <div class="w-full bg-slate-900 h-2 rounded-full overflow-hidden border border-slate-800">
+                  <div id="ownerAdProgressBar" class="h-full bg-gradient-to-r from-brand-600 to-indigo-500 transition-all duration-500 w-[0%]"></div>
+                </div>
+              </div>
+              <div class="flex justify-between items-center text-[10px] text-slate-350">
+                <span>Ad Promotion Status:</span>
+                <span id="ownerAdStatusBadge" class="bg-slate-900 border border-slate-800 px-2.5 py-0.5 rounded-md font-bold uppercase tracking-wider text-slate-500">Inactive</span>
+              </div>
+              <div>
+                <label class="block text-[9px] text-brand-400 font-bold uppercase tracking-wider mb-1">Custom Ad Banner Image URL / विज्ञापन फोटो लिंक:</label>
+                <input type="text" id="ownerAdBannerUrlInput" placeholder="https://example.com/banner.png" class="w-full bg-slate-900 border border-slate-850 text-white text-xs rounded-lg p-2 focus:outline-none focus:border-brand-500">
+              </div>
+            </div>
+          </div>
+          <button onclick="saveOwnerOffer()" class="w-full bg-brand-600 hover:bg-brand-700 text-white py-2.5 rounded-xl text-xs font-bold transition-all shadow-md flex items-center justify-center space-x-1.5">
+            <i class="fa-solid fa-floppy-disk"></i>
+            <span data-translate="saveOfferBtn">Save Configuration</span>
+          </button>
+        </div>
+        <div id="tabApprovals" class="hidden space-y-4">
+          <p class="text-xs font-bold text-slate-350" data-translate="pendingApprovalsTitle">Pending Salon Approvals / लंबित सैलून अनुमोदन</p>
+          <div id="ownerApprovalsListContainer" class="space-y-3 max-h-[420px] overflow-y-auto pr-1 no-scrollbar"></div>
+        </div>
+      </div>
+    </div>
+    <div id="screen-language" class="hidden flex-col h-full w-full overflow-y-auto">
+      <header class="bg-slate-950/95 border-b border-slate-900 px-4 py-3 flex items-center space-x-3">
+        <button onclick="navigateTo('home')" class="w-8 h-8 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center hover:bg-slate-850 transition-colors">
+          <i class="fa-solid fa-arrow-left text-slate-300 text-xs"></i>
+        </button>
+        <h2 class="font-outfit font-bold text-sm text-white">Language / भाषा</h2>
+      </header>
+      <div class="flex-grow p-6 flex flex-col justify-between items-center pb-20">
+        <div class="w-full bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-4">
+          <p class="text-xs text-slate-400 font-bold uppercase tracking-wider pb-2 border-b border-slate-950">Select Language</p>
+          <div class="space-y-3">
+            <label class="flex items-center justify-between p-3 bg-slate-950 rounded-xl cursor-pointer border border-slate-850 hover:border-slate-800">
+              <span class="text-sm font-semibold text-white">English</span>
+              <input type="radio" name="langSelect" value="en" onclick="setAppLanguage('en')" class="w-4 h-4 text-brand-600 focus:ring-brand-500 border-slate-700 bg-slate-950">
+            </label>
+            <label class="flex items-center justify-between p-3 bg-slate-950 rounded-xl cursor-pointer border border-slate-850 hover:border-slate-800">
+              <span class="text-sm font-semibold text-white">हिंदी</span>
+              <input type="radio" name="langSelect" value="hi" onclick="setAppLanguage('hi')" class="w-4 h-4 text-brand-600 focus:ring-brand-500 border-slate-700 bg-slate-950">
+            </label>
+          </div>
+        </div>
+        <div class="relative w-64 h-64 flex items-center justify-center">
+          <div class="absolute w-44 h-44 bg-indigo-600/15 rounded-full blur-xl animate-pulse"></div>
+          <div class="w-32 h-32 bg-gradient-to-tr from-brand-600 to-indigo-400 rounded-full flex items-center justify-center shadow-2xl relative">
+            <i class="fa-solid fa-globe text-white text-5xl opacity-40"></i>
+            <div class="absolute w-20 h-20 bg-slate-950/80 rounded-full border border-slate-800 flex items-center justify-center transform translate-y-3">
+              <i class="fa-solid fa-user-tie text-brand-400 text-3xl"></i>
+            </div>
+          </div>
+          <div class="absolute top-4 left-6 bg-brand-600 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg transform -rotate-12">Hello</div>
+          <div class="absolute bottom-6 right-6 bg-emerald-600 text-white text-xs font-bold px-3 py-1.5 rounded-full shadow-lg transform rotate-12">नमस्ते</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Customer Login and Registration Screen -->
+    <div id="screen-customer-auth" class="hidden flex-col h-full w-full overflow-y-auto">
+      <header class="bg-slate-950/95 border-b border-slate-900 px-4 py-3 flex items-center justify-between">
+        <div class="flex items-center space-x-2">
+          <div class="w-9 h-9 bg-slate-900 border border-slate-800 rounded-xl flex items-center justify-center shadow-lg overflow-hidden p-1">
+            <img src="images/logo_symbol_trans.png?v=1.3" class="w-full h-full object-contain">
+          </div>
+          <div>
+            <h1 class="font-outfit font-extrabold text-xl tracking-tight bg-gradient-to-r from-white via-indigo-200 to-brand-500 bg-clip-text text-transparent">ZEROWAIT Q</h1>
+            <p class="text-[9px] text-slate-400 uppercase tracking-widest font-semibold" data-translate="subtitle">Live Salon Token System</p>
+          </div>
+        </div>
+      </header>
+      
+      <div class="flex-grow p-6 flex flex-col justify-center items-center pb-20">
+        <!-- CUSTOMER LOGIN FORM -->
+        <div id="customerLoginForm" class="w-full max-w-[340px] bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl space-y-4">
+          <div class="text-center space-y-1">
+            <h3 class="font-outfit font-extrabold text-lg text-white">Customer Login</h3>
+            <p class="text-[10px] text-slate-400">Login to explore salons and book tokens</p>
+          </div>
+          <div class="space-y-3">
+            <div>
+              <label class="block text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">Mobile Number or Email</label>
+              <input type="text" id="customerLoginIdentity" placeholder="Enter Mobile or Email" class="w-full bg-slate-955 border border-slate-800 text-white rounded-xl px-3.5 py-2.5 text-xs focus:outline-none focus:border-brand-500 transition-colors">
+            </div>
+            <div>
+              <label class="block text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">Password</label>
+              <input type="password" id="customerLoginPassword" placeholder="Enter Password" class="w-full bg-slate-955 border border-slate-800 text-white rounded-xl px-3.5 py-2.5 text-xs focus:outline-none focus:border-brand-500 transition-colors">
+            </div>
+            <div class="text-right">
+              <button type="button" onclick="toggleCustomerForgotPasswordView(true)" class="text-[10px] text-brand-400 hover:text-brand-300 font-semibold underline">Forgot Password? / पासवर्ड भूल गए?</button>
+            </div>
+            <div id="customerLoginError" class="text-rose-400 text-[10px] font-semibold hidden"></div>
+            <button onclick="submitCustomerLogin()" class="w-full bg-gradient-to-r from-brand-600 to-indigo-500 hover:from-brand-700 hover:to-indigo-600 text-white py-2.5 rounded-xl font-bold text-xs tracking-wide shadow-lg transition-all flex items-center justify-center space-x-1.5">
+              <i class="fa-solid fa-right-to-bracket"></i>
+              <span>Login</span>
+            </button>
+          </div>
+          <div class="text-center pt-2">
+            <button onclick="toggleCustomerAuthView(true)" class="text-[10px] text-brand-400 hover:text-brand-300 font-bold underline">Don't have an account? Sign Up</button>
+          </div>
+        </div>
+
+        <!-- CUSTOMER FORGOT PASSWORD FORM -->
+        <div id="customerForgotPasswordForm" class="w-full max-w-[340px] bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl space-y-4 hidden">
+          <div class="text-center space-y-1">
+            <h3 class="font-outfit font-extrabold text-lg text-white">Reset Password</h3>
+            <p class="text-[10px] text-slate-400">Enter your registered mobile number to reset password</p>
+          </div>
+          <div class="space-y-3">
+            <!-- Phase 1: Request OTP -->
+            <div id="forgot-request-fields" class="space-y-3">
+              <div>
+                <label class="block text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">Registered Mobile Number</label>
+                <input type="tel" id="customerForgotMobile" maxlength="10" placeholder="Enter 10-digit Mobile" class="w-full bg-slate-955 border border-slate-800 text-white rounded-xl px-3.5 py-2.5 text-xs focus:outline-none focus:border-brand-500 transition-colors">
+              </div>
+              <button onclick="submitForgotPasswordRequest()" class="w-full bg-gradient-to-r from-brand-600 to-indigo-500 hover:from-brand-700 hover:to-indigo-600 text-white py-2.5 rounded-xl font-bold text-xs tracking-wide shadow-lg transition-all flex items-center justify-center space-x-1.5">
+                <i class="fa-solid fa-paper-plane"></i>
+                <span>Send OTP / ओटीपी भेजें</span>
+              </button>
+            </div>
+
+            <!-- Phase 2: Enter OTP & New Password (Hidden initially) -->
+            <div id="forgot-reset-fields" class="space-y-3 hidden">
+              <div>
+                <label class="block text-[10px] text-slate-350 font-bold mb-1">Enter 6-Digit OTP</label>
+                <input type="text" id="customerForgotOtp" maxlength="6" placeholder="e.g. 123456" class="w-full bg-slate-955 border border-slate-800 text-white text-center rounded-xl py-2.5 text-sm tracking-widest focus:outline-none focus:border-brand-500 transition-colors">
+              </div>
+              <div>
+                <label class="block text-[10px] text-slate-355 font-bold mb-1">New Password (min 6 chars)</label>
+                <input type="password" id="customerForgotNewPassword" placeholder="Enter New Password" class="w-full bg-slate-955 border border-slate-800 text-white rounded-xl px-3.5 py-2.5 text-xs focus:outline-none focus:border-brand-500 transition-colors">
+              </div>
+              <div>
+                <label class="block text-[10px] text-slate-360 font-bold mb-1">Confirm New Password</label>
+                <input type="password" id="customerForgotConfirmPassword" placeholder="Confirm New Password" class="w-full bg-slate-955 border border-slate-800 text-white rounded-xl px-3.5 py-2.5 text-xs focus:outline-none focus:border-brand-500 transition-colors">
+              </div>
+              <button onclick="submitPasswordReset()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-2.5 rounded-xl font-bold text-xs tracking-wide shadow-lg transition-all flex items-center justify-center space-x-1.5">
+                <i class="fa-solid fa-circle-check"></i>
+                <span>Reset Password / पासवर्ड बदलें</span>
+              </button>
+            </div>
+
+            <div id="customerForgotError" class="text-rose-400 text-[10px] font-semibold hidden text-center"></div>
+          </div>
+          <div class="text-center pt-2">
+            <button onclick="toggleCustomerForgotPasswordView(false)" class="text-[10px] text-brand-400 hover:text-brand-300 font-bold underline">Back to Login / लॉगिन पर वापस जाएं</button>
+          </div>
+        </div>
+
+        <!-- CUSTOMER REGISTER FORM -->
+        <div id="customerRegisterForm" class="w-full max-w-[340px] bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl space-y-4 hidden">
+          <div class="text-center space-y-1">
+            <h3 class="font-outfit font-extrabold text-lg text-white">Customer Sign Up</h3>
+            <p class="text-[10px] text-slate-400">Register to start booking intelligent salon slots</p>
+          </div>
+          <div class="space-y-3">
+            <div>
+              <label class="block text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">Full Name</label>
+              <input type="text" id="customerRegisterName" placeholder="Enter Full Name" class="w-full bg-slate-955 border border-slate-800 text-white rounded-xl px-3.5 py-2.5 text-xs focus:outline-none focus:border-brand-500 transition-colors">
+            </div>
+            <div>
+              <label class="block text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">Mobile Number (10 digits)</label>
+              <input type="tel" id="customerRegisterMobile" maxlength="10" placeholder="Enter Mobile Number" class="w-full bg-slate-955 border border-slate-800 text-white rounded-xl px-3.5 py-2.5 text-xs focus:outline-none focus:border-brand-500 transition-colors">
+            </div>
+            <div>
+              <label class="block text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">Email Address</label>
+              <input type="email" id="customerRegisterEmail" placeholder="name@domain.com" class="w-full bg-slate-955 border border-slate-800 text-white rounded-xl px-3.5 py-2.5 text-xs focus:outline-none focus:border-brand-500 transition-colors">
+            </div>
+            <div>
+              <label class="block text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-1">Password</label>
+              <input type="password" id="customerRegisterPassword" placeholder="Minimum 6 characters" class="w-full bg-slate-955 border border-slate-800 text-white rounded-xl px-3.5 py-2.5 text-xs focus:outline-none focus:border-brand-500 transition-colors">
+            </div>
+            <div id="customerRegisterError" class="text-rose-400 text-[10px] font-semibold hidden"></div>
+            <button onclick="submitCustomerRegister()" class="w-full bg-gradient-to-r from-brand-600 to-indigo-500 hover:from-brand-700 hover:to-indigo-600 text-white py-2.5 rounded-xl font-bold text-xs tracking-wide shadow-lg transition-all flex items-center justify-center space-x-1.5">
+              <i class="fa-solid fa-user-plus"></i>
+              <span>Register</span>
+            </button>
+          </div>
+          <div class="text-center pt-2">
+            <button onclick="toggleCustomerAuthView(false)" class="text-[10px] text-brand-400 hover:text-brand-300 font-bold underline">Already have an account? Login</button>
+          </div>
+        </div>
+      </div>
+
+  </main>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.js"></script>
+  <script src="script.js?v=5.3"></script>
+</body>
+</html>

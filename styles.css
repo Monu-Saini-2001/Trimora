@@ -1,0 +1,85 @@
+html, body {
+  touch-action: pan-x pan-y;
+}
+/* Prevent iOS auto-zoom on input focus */
+@media screen and (max-width: 768px) {
+  input, select, textarea {
+    font-size: 16px !important;
+  }
+}
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; overscroll-behavior-x: contain; }
+.overflow-x-auto { overscroll-behavior-x: contain; }
+.glow-border-brand { box-shadow: 0 0 14px rgba(201, 158, 50, 0.45); }
+.glow-text { text-shadow: 0 0 10px rgba(201, 158, 50, 0.65); }
+.leaflet-container { background: #080a0f !important; }
+.leaflet-bar a { background-color: #0f131a !important; color: #f3f4f6 !important; border-bottom: 1px solid #181e29 !important; }
+.leaflet-bar a:hover { background-color: #181e29 !important; }
+.leaflet-popup-content-wrapper { background: #0f131a !important; color: #f3f4f6 !important; border: 1px solid #181e29 !important; border-radius: 12px !important; }
+.leaflet-popup-tip { background: #0f131a !important; border: 1px solid #181e29 !important; }
+
+/* Keep top bar buttons compact */
+.header-btn-text {
+  display: none;
+}
+
+/* Custom scrollbar for premium feel */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #080a0f;
+}
+::-webkit-scrollbar-thumb {
+  background: #181e29;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #c99e32;
+}
+
+
+/* Hide Leaflet Routing Machine itinerary text panel */
+.leaflet-routing-container {
+  display: none !important;
+}
+
+/* Vertical scrolling marquee gallery */
+.vertical-marquee-container {
+  mask-image: linear-gradient(to bottom, transparent, black 12%, black 88%, transparent);
+  -webkit-mask-image: linear-gradient(to bottom, transparent, black 12%, black 88%, transparent);
+}
+
+.vertical-marquee-col {
+  height: 100%;
+  overflow: hidden;
+  position: relative;
+}
+
+.marquee-track {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.marquee-down .marquee-track {
+  animation: scroll-vertical-down 16s linear infinite;
+}
+
+.marquee-down-slow .marquee-track {
+  animation: scroll-vertical-down 22s linear infinite;
+}
+
+.vertical-marquee-container:hover .marquee-track {
+  animation-play-state: paused;
+}
+
+@keyframes scroll-vertical-down {
+  0% {
+    transform: translateY(-50%);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
