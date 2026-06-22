@@ -173,7 +173,8 @@ async function confirmBooking(){
     document.getElementById('successModalTokenNo').innerText = (currentLang === 'en' ? 'Token #' : 'टोकन संख्या #') + newTokenObj.tokenNumber;
     document.getElementById('successModalBarberName').innerText = newTokenObj.barberName;
     document.getElementById('successModalServices').innerText = newTokenObj.servicesList.join(', ');
-    document.getElementById('successModalWaitTime').innerText = newTokenObj.remainingWait.toFixed(0) + ' ' + t('mins');
+    const successEstStartWait = Math.max(0, (newTokenObj.initialWait || 0) - (newTokenObj.servicesDuration || 0));
+    document.getElementById('successModalWaitTime').innerText = successEstStartWait.toFixed(0) + ' ' + t('mins');
     document.getElementById('successModalPrice').innerText = '₹' + newTokenObj.price;
     
     // Display Modal
@@ -633,8 +634,9 @@ function renderTrackerUI(){
   activeTokens.forEach(token=>{
     const timeline=getBarberTimeline(token.salonId,token.barberName);
     const idx=timeline.findIndex(t=>(t._id && token._id && t._id == token._id) || t.tokenNumber == token.tokenNumber);
-    let waitTime=token.remainingWait;
-    if(idx>0){
+    const isHead=(idx===0);
+    let waitTime=0;
+    if(!isHead && idx>0){
       const first=timeline[0];
       waitTime=first.tokenNumber?first.remainingWait:first.duration;
       for(let i=1;i<idx;i++){
@@ -642,7 +644,6 @@ function renderTrackerUI(){
         waitTime+=item.tokenNumber?item.servicesDuration:item.duration;
       }
     }
-    const isHead=(idx===0);
     const posText=isHead?(currentLang==='en'?'Serving Now':'अभी सेवा जारी'):(currentLang==='en'?'In Queue (Pos: ' + idx + ')':'कतार में (स्थान: ' + idx + ')');
     const initialWaitToStart = (token.initialWait || 0) - (token.servicesDuration || 0);
     const progressPercent = isHead
@@ -708,6 +709,7 @@ function renderTrackerUI(){
           '<p class="text-xs font-semibold text-slate-200">' + token.salonName + '</p>' +
           '<p class="text-[11px] text-slate-355">' + barberLabel + ': <span class="text-brand-300 font-medium">' + token.barberName + '</span></p>' +
           '<p class="text-[10px] text-slate-400 line-clamp-1 px-4">' + token.servicesList.join(', ') + '</p>' +
+          (isHead ? ('<p class="text-[10px] text-emerald-400 font-bold mt-1 text-center">' + (currentLang === 'en' ? 'Service progress: ' : 'सेवा की प्रगति: ') + token.remainingWait.toFixed(1) + ' ' + t('mins') + (currentLang === 'en' ? ' left' : ' शेष') + '</p>') : '') +
         '</div>' +
       '</div>' +
       '<div class="space-y-2 mt-2">' +
