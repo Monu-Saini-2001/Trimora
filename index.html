@@ -161,14 +161,14 @@
                 <label class="block text-[10px] text-slate-300 font-semibold mb-1" data-translate="salonAddressLabel">Salon Address</label>
                 <input type="text" id="regSalonAddress" placeholder="e.g. PLA Market, Hisar" class="w-full bg-slate-950 border border-slate-800 text-white rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-brand-500 transition-colors">
               </div>
-              <div class="grid grid-cols-2 gap-2">
+              <div class="grid grid-cols-2 gap-2 hidden">
                 <div>
                   <label class="block text-[10px] text-slate-300 font-semibold mb-1">Latitude</label>
-                  <input type="number" step="0.0001" id="regSalonLat" placeholder="e.g. 29.15" class="w-full bg-slate-950 border border-slate-800 text-white rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-brand-500 transition-colors">
+                  <input type="number" step="0.0001" id="regSalonLat" placeholder="e.g. 29.15" class="w-full bg-slate-955 border border-slate-800 text-white rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-brand-500 transition-colors">
                 </div>
                 <div>
                   <label class="block text-[10px] text-slate-300 font-semibold mb-1">Longitude</label>
-                  <input type="number" step="0.0001" id="regSalonLng" placeholder="e.g. 75.72" class="w-full bg-slate-950 border border-slate-800 text-white rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-brand-500 transition-colors">
+                  <input type="number" step="0.0001" id="regSalonLng" placeholder="e.g. 75.72" class="w-full bg-slate-955 border border-slate-800 text-white rounded-xl px-3 py-2 text-xs focus:outline-none focus:border-brand-500 transition-colors">
                 </div>
               </div>
               <div>
@@ -201,6 +201,7 @@
               <div>
                 <label class="block text-[10px] text-slate-300 font-semibold mb-1" data-translate="otpLabel">Enter 6-Digit OTP</label>
                 <input type="text" id="regOtpInput" maxlength="6" placeholder="e.g. 123456" class="w-full bg-slate-950 border border-slate-800 text-white text-center rounded-xl py-2 text-sm tracking-widest focus:outline-none focus:border-brand-500 transition-colors">
+                <p id="regOtpHint" class="text-[10px] text-indigo-400 text-center font-bold mt-1.5"></p>
               </div>
               <p id="otpErrorMsg" class="text-[10px] text-rose-400 text-center font-medium hidden"></p>
             </div>
@@ -227,6 +228,49 @@
           <img id="lightboxImage" src="" class="max-w-full max-h-[50vh] object-contain">
         </div>
         <p id="lightboxCaption" class="mt-4 text-xs font-outfit font-extrabold text-brand-400 uppercase tracking-wider text-center"></p>
+      </div>
+    </div>
+
+    <!-- Booking Confirmation Success Modal -->
+    <div id="bookingSuccessModal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm hidden">
+      <div class="w-full max-w-[340px] bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl relative space-y-4 text-center">
+        <div class="w-16 h-16 bg-emerald-500/10 border border-emerald-500/30 rounded-full flex items-center justify-center mx-auto text-emerald-400 text-3xl animate-bounce">
+          <i class="fa-solid fa-circle-check"></i>
+        </div>
+        <div class="space-y-1">
+          <h3 class="font-outfit font-extrabold text-lg text-white">Booking Confirmed!</h3>
+          <p class="text-xs text-slate-400">Your token slot has been successfully booked.</p>
+        </div>
+        <div class="bg-slate-955 border border-slate-800/80 rounded-2xl p-4 text-left space-y-2.5 text-xs text-slate-300">
+          <div class="flex justify-between items-center pb-2 border-b border-slate-900">
+            <span class="font-bold text-white text-sm" id="successModalSalonName">Salon Name</span>
+            <span class="bg-brand-500/20 text-brand-400 border border-brand-500/30 px-2 py-0.5 rounded-lg text-[10px] font-bold" id="successModalTokenNo">Token #1</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-slate-450">Barber:</span>
+            <span class="font-semibold text-slate-200" id="successModalBarberName">Rajiv Sharma</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-slate-450">Services:</span>
+            <span class="font-semibold text-slate-200 truncate max-w-[160px]" id="successModalServices">Haircut</span>
+          </div>
+          <div class="flex justify-between">
+            <span class="text-slate-450">Estimated Wait:</span>
+            <span class="font-semibold text-amber-400" id="successModalWaitTime">35 mins</span>
+          </div>
+          <div class="flex justify-between pt-2 border-t border-slate-900 font-bold">
+            <span class="text-white">Amount to Pay:</span>
+            <span class="text-emerald-400" id="successModalPrice">₹150</span>
+          </div>
+        </div>
+        <div class="flex space-x-3 pt-2">
+          <button onclick="closeSuccessModalAndNavigate('home')" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 py-2.5 rounded-xl font-bold text-xs tracking-wide transition-all">
+            Home
+          </button>
+          <button onclick="closeSuccessModalAndNavigate('tracking')" class="flex-1 bg-gradient-to-r from-brand-600 to-indigo-500 hover:from-brand-700 hover:to-indigo-600 text-white py-2.5 rounded-xl font-bold text-xs tracking-wide shadow-lg transition-all">
+            Track Live
+          </button>
+        </div>
       </div>
     </div>
 
@@ -999,6 +1043,12 @@
           <div class="text-center pt-2">
             <button onclick="toggleCustomerAuthView(true)" class="text-[10px] text-brand-400 hover:text-brand-300 font-bold underline">Don't have an account? Sign Up</button>
           </div>
+          <div class="text-center pt-3 border-t border-slate-800/80 mt-2">
+            <button onclick="openLoginModal()" class="w-full bg-slate-955 hover:bg-slate-850 border border-slate-800 text-slate-300 hover:text-white py-2 rounded-xl text-[10px] font-bold transition-all flex items-center justify-center space-x-1.5">
+              <i class="fa-solid fa-store text-indigo-400"></i>
+              <span>Salon Owner Portal / सैलून मालिक पोर्टल</span>
+            </button>
+          </div>
         </div>
 
         <!-- CUSTOMER FORGOT PASSWORD FORM -->
@@ -1025,6 +1075,7 @@
               <div>
                 <label class="block text-[10px] text-slate-350 font-bold mb-1">Enter 6-Digit OTP</label>
                 <input type="text" id="customerForgotOtp" maxlength="6" placeholder="e.g. 123456" class="w-full bg-slate-955 border border-slate-800 text-white text-center rounded-xl py-2.5 text-sm tracking-widest focus:outline-none focus:border-brand-500 transition-colors">
+                <p id="customerForgotOtpHint" class="text-[10px] text-indigo-400 text-center font-bold mt-1.5"></p>
               </div>
               <div>
                 <label class="block text-[10px] text-slate-355 font-bold mb-1">New Password (min 6 chars)</label>
@@ -1079,12 +1130,18 @@
           <div class="text-center pt-2">
             <button onclick="toggleCustomerAuthView(false)" class="text-[10px] text-brand-400 hover:text-brand-300 font-bold underline">Already have an account? Login</button>
           </div>
+          <div class="text-center pt-3 border-t border-slate-800/80 mt-2">
+            <button onclick="openLoginModal()" class="w-full bg-slate-955 hover:bg-slate-850 border border-slate-800 text-slate-300 hover:text-white py-2 rounded-xl text-[10px] font-bold transition-all flex items-center justify-center space-x-1.5">
+              <i class="fa-solid fa-store text-indigo-400"></i>
+              <span>Salon Owner Portal / सैलून मालिक पोर्टल</span>
+            </button>
+          </div>
         </div>
       </div>
 
   </main>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://unpkg.com/leaflet-routing-machine@latest/dist/leaflet-routing-machine.js"></script>
-  <script src="script.js?v=5.4"></script>
+  <script src="script.js?v=5.5"></script>
 </body>
 </html>

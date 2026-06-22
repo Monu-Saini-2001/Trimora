@@ -31,16 +31,50 @@ function getDistanceString(coords){if(!coords||coords.length<2)return'';const di
 function saveQueueGaps(){}
 function getBarberTimeline(salonId,barberName){const queue=getBarberActiveQueue(salonId,barberName);const gaps=queueGaps.filter(g=>g.salonId===salonId&&g.barberName===barberName);return[...queue,...gaps].sort((a,b)=>(a.bookingTimeMs||0)-(b.bookingTimeMs||0))}
 function updateEmergencyAlert(){const alertEl=document.getElementById('emergencySlotAlert'),alertTextEl=document.getElementById('emergencySlotAlertText');if(!alertEl||!alertTextEl)return;if(selectedSalon&&selectedBarber){const gaps=queueGaps.filter(g=>g.salonId===selectedSalon.id&&g.barberName===selectedBarber.name);if(gaps.length>0){alertTextEl.innerText=currentLang==='en'?`🚨 Express Slot Available for ${selectedBarber.name}! Book as VIP/Emergency to skip queue.`:`🚨 ${selectedBarber.name} के लिए एक्सप्रेस स्लॉट उपलब्ध! कतार से बचने के लिए वीआईपी/इमरजेंसी बुक करें।`;alertEl.classList.remove('hidden');return}}alertEl.classList.add('hidden')}
-async function shiftBarberQueue(salonId,barberName){try{await fetch('/api/gaps/shift',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({salonId,barberName})});queueGaps=queueGaps.filter(g=>!(g.salonId===salonId&&g.barberName===barberName));updateEmergencyAlert();playSound('success');renderTrackerUI();alert(currentLang==='en'?"Queue shifted! All gaps filled/removed.":"कतार आगे बढ़ा दी गई है! सभी खाली गैप भर दिए गए हैं।")}catch(e){console.error(e)}}
-function triggerExpressSlotNotification(salonName,barberName){playSound('alert');const text=currentLang==='en'?`🚨 Express Slot Open at ${salonName}! Barber ${barberName} has a slot. Book VIP to grab it!`:`🚨 ${salonName} में एक्सप्रेस स्लॉट उपलब्ध! नाई ${barberName} के पास स्लॉट खाली है। वीआईपी बुक करें!`;document.getElementById('whatsappMsgText').innerText=text;document.getElementById('notificationTime').innerText=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});const notification=document.getElementById('whatsappNotification');if(notification){notification.classList.remove('-translate-y-full');setTimeout(()=>closeWhatsAppNotification(),10000)}}
-function getSalonStatus(salon){if(!salon)return'free';if(salon.status==='closed')return'closed';const activeBarbers=salon.barbers.filter(b=>!b.onLeave);const barbersCount=activeBarbers.length||1;let totalWait=0;activeBarbers.forEach(barber=>{const timeline=getBarberActiveQueue(salon.id,barber.name);timeline.forEach(item=>{totalWait+=item.remainingWait})});if(totalWait===0)return'free';const avgWait=totalWait/barbersCount;if(avgWait<=150)return'busy';return'full'}
-function getSalonPendingCount(salonId){return historyData.filter(t=>t.status==='active'&&t.salonId===salonId).length}
-const audioCtx=new(window.AudioContext||window.webkitAudioContext)();
-function playSound(type){if(audioCtx.state==='suspended')audioCtx.resume();const osc=audioCtx.createOscillator(),gain=audioCtx.createGain();osc.connect(gain);gain.connect(audioCtx.destination);const now=audioCtx.currentTime;if(type==='success'){osc.type='sine';osc.frequency.setValueAtTime(440,now);osc.frequency.exponentialRampToValueAtTime(880,now+0.3);gain.gain.setValueAtTime(0.15,now);gain.gain.exponentialRampToValueAtTime(0.01,now+0.3);osc.start(now);osc.stop(now+0.3)}else if(type==='alert'){osc.type='sine';osc.frequency.setValueAtTime(660,now);osc.frequency.setValueAtTime(660,now+0.08);osc.frequency.setValueAtTime(880,now+0.12);gain.gain.setValueAtTime(0.2,now);gain.gain.setValueAtTime(0.01,now+0.08);gain.gain.setValueAtTime(0.2,now+0.12);gain.gain.exponentialRampToValueAtTime(0.01,now+0.35);osc.start(now);osc.stop(now+0.4)}else if(type==='cancel'){osc.type='triangle';osc.frequency.setValueAtTime(350,now);osc.frequency.exponentialRampToValueAtTime(150,now+0.45);gain.gain.setValueAtTime(0.25,now);gain.gain.exponentialRampToValueAtTime(0.01,now+0.45);osc.start(now);osc.stop(now+0.45)}else if(type==='complete'){osc.type='sine';osc.frequency.setValueAtTime(523.25,now);osc.frequency.setValueAtTime(659.25,now+0.1);gain.gain.setValueAtTime(0.15,now);gain.gain.setValueAtTime(0.2,now+0.1);gain.gain.exponentialRampToValueAtTime(0.01,now+0.6);osc.start(now);osc.stop(now+0.6)}}
-function clearSearch(){document.getElementById('salonSearchInput').value='';document.getElementById('searchSuggestions').classList.add('hidden');document.getElementById('clearSearchBtn').classList.add('hidden');document.getElementById('searchNoResults').classList.add('hidden');renderSalonsList(salonsData.filter(s=>s.status!=='pending'))}
-async function selectSalon(salonId){await selectSalonFromList(salonId)}
-
-function renderSalonsList(salons){const container=document.getElementById('salonsListContainer');const countLabel=document.getElementById('salonsCountLabel');if(!container)return;container.innerHTML='';if(countLabel){countLabel.innerText=`${salons.length} ${salons.length===1?(currentLang==='en'?'Salon':'सैलून'):(currentLang==='en'?'Salons':'सैलून')}`}if(salons.length===0){container.innerHTML=`<div class="text-center py-8 text-slate-500 text-xs">${currentLang==='en'?'No salons found':'कोई सैलून नहीं मिला'}</div>`;return}salons.forEach(salon=>{const status=getSalonStatus(salon);const isClosed=status==='closed';const statusColor=isClosed?'text-rose-400':(status==='full'?'text-orange-400':(status==='busy'?'text-amber-400':'text-emerald-400'));const statusText=isClosed?(currentLang==='en'?'Closed':'बंद'):(status==='full'?t('highDemandStatus'):(status==='busy'?t('standardStatus'):t('fastPassStatus')));const reviews=historyData.filter(t=>t.salonId===salon.id&&t.feedback&&t.feedback.salonRating);let avgRating=4.8;if(reviews.length>0){const sum=reviews.reduce((acc,r)=>acc+r.feedback.salonRating,0);avgRating=sum/reviews.length}const reviewCount=reviews.length+3;const distanceStr=getDistanceString(salon.coords);const card=document.createElement('div');card.id=`salon-card-${salon.id}`;card.className="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-xl flex flex-col space-y-3 cursor-pointer hover:border-brand-500 transition-all";card.onclick=()=>selectSalonFromList(salon.id,false);card.innerHTML=`<div class="flex justify-between items-start space-x-3"><div class="flex-grow min-w-0"><h3 class="font-outfit font-bold text-base text-white truncate">${salon.name}</h3><div class="flex items-center text-xs text-amber-400 space-x-1 mt-0.5"><span class="font-extrabold">${avgRating.toFixed(1)}</span><div class="flex text-[10px] text-amber-450">${getStarsHtml(avgRating)}</div><span class="text-slate-550 font-medium">(${reviewCount}) · Salon</span></div><p class="text-xs text-slate-455 mt-1 truncate"><span class="${statusColor} font-bold">${statusText}</span> · ${salon.address.split(',')[0]} (${distanceStr})</p></div><div class="w-20 h-16 rounded-xl overflow-hidden flex-shrink-0 bg-slate-955 border border-slate-800/80"><img src="${salon.image||'/images/default_salon.png'}" alt="${salon.name}" class="w-full h-full object-cover"></div></div><div id="salon-expand-${salon.id}" class="hidden border-t border-slate-850 pt-3.5 space-y-3"><div class="bg-brand-950/40 border border-brand-900/30 rounded-xl p-3 flex items-start space-x-2.5"><i class="fa-solid fa-gift text-brand-400 mt-0.5 animate-pulse-slow"></i><div class="flex-grow"><p class="text-[9px] font-bold text-brand-400 uppercase tracking-wider">${currentLang==='en'?'Current Offer':'सक्रिय ऑफर'}</p><p class="text-xs text-slate-300 font-medium leading-relaxed">${salon.offer}</p></div></div><div class="bg-slate-955/60 border border-slate-900/60 rounded-xl p-3 space-y-2"><p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex justify-between items-center"><span>${currentLang==='en'?'Service Rates':'सेवाओं की दरें'}</span><span class="text-emerald-400 font-extrabold">₹ Rs</span></p><div id="salon-expand-rates-${salon.id}" class="grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-slate-355 max-h-24 overflow-y-auto no-scrollbar pr-1"></div></div><button onclick="event.stopPropagation(); triggerBooking('${salon.id}')" class="w-full bg-brand-600 hover:bg-brand-700 text-white py-2.5 rounded-xl font-bold text-xs tracking-wide transition-all flex items-center justify-center space-x-1.5 shadow-lg"><i class="fa-solid fa-ticket"></i><span>${currentLang==='en'?'Choose Barber & Book Now':'नाई चुनें और टोकन बुक करें'}</span></button></div>`;container.appendChild(card)})}
+async function shiftBarberQueue(salonId,barberName){try{await fetch('/api/gaps/sfunction renderSalonsList(salons){
+  const container=document.getElementById('salonsListContainer');
+  const countLabel=document.getElementById('salonsCountLabel');
+  if(!container)return;
+  container.innerHTML='';
+  
+  // Proximity sorting
+  let sortedSalons = [...salons];
+  if (userLocation && userLocation.length === 2) {
+    sortedSalons.sort((a, b) => {
+      const distA = getDistanceKm(userLocation[0], userLocation[1], a.coords[0], a.coords[1]);
+      const distB = getDistanceKm(userLocation[0], userLocation[1], b.coords[0], b.coords[1]);
+      return distA - distB;
+    });
+  }
+  
+  if(countLabel){
+    countLabel.innerText=`${sortedSalons.length} ${sortedSalons.length===1?(currentLang==='en'?'Salon':'सैलून'):(currentLang==='en'?'Salons':'सैलून')}`;
+  }
+  if(sortedSalons.length===0){
+    container.innerHTML=`<div class="text-center py-8 text-slate-500 text-xs">${currentLang==='en'?'No salons found':'कोई सैलून नहीं मिला'}</div>`;
+    return;
+  }
+  sortedSalons.forEach(salon=>{
+    const status=getSalonStatus(salon);
+    const isClosed=status==='closed';
+    const statusColor=isClosed?'text-rose-400':(status==='full'?'text-orange-400':(status==='busy'?'text-amber-400':'text-emerald-400'));
+    const statusText=isClosed?(currentLang==='en'?'Closed':'बंद'):(status==='full'?t('highDemandStatus'):(status==='busy'?t('standardStatus'):t('fastPassStatus')));
+    const reviews=historyData.filter(t=>t.salonId===salon.id&&t.feedback&&t.feedback.salonRating);
+    let avgRating=4.8;
+    if(reviews.length>0){
+      const sum=reviews.reduce((acc,r)=>acc+r.feedback.salonRating,0);
+      avgRating=sum/reviews.length;
+    }
+    const reviewCount=reviews.length+3;
+    const distanceStr=getDistanceString(salon.coords);
+    const card=document.createElement('div');
+    card.id=`salon-card-${salon.id}`;
+    card.className="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-xl flex flex-col space-y-3 cursor-pointer hover:border-brand-500 transition-all";
+    card.onclick=()=>selectSalonFromList(salon.id,false);
+    card.innerHTML=`<div class="flex justify-between items-start space-x-3"><div class="flex-grow min-w-0"><h3 class="font-outfit font-bold text-base text-white truncate">${salon.name}</h3><div class="flex items-center text-xs text-amber-400 space-x-1 mt-0.5"><span class="font-extrabold">${avgRating.toFixed(1)}</span><div class="flex text-[10px] text-amber-450">${getStarsHtml(avgRating)}</div><span class="text-slate-550 font-medium">(${reviewCount}) · Salon</span></div><p class="text-xs text-slate-455 mt-1 truncate"><span class="${statusColor} font-bold">${statusText}</span> · ${salon.address.split(',')[0]} (${distanceStr})</p></div><div class="w-20 h-16 rounded-xl overflow-hidden flex-shrink-0 bg-slate-955 border border-slate-800/80"><img src="${salon.image||'/images/default_salon.png'}" alt="${salon.name}" class="w-full h-full object-cover"></div></div><div id="salon-expand-${salon.id}" class="hidden border-t border-slate-850 pt-3.5 space-y-3"><div class="bg-brand-950/40 border border-brand-900/30 rounded-xl p-3 flex items-start space-x-2.5"><i class="fa-solid fa-gift text-brand-400 mt-0.5 animate-pulse-slow"></i><div class="flex-grow"><p class="text-[9px] font-bold text-brand-400 uppercase tracking-wider">${currentLang==='en'?'Current Offer':'सक्रिय ऑफर'}</p><p class="text-xs text-slate-300 font-medium leading-relaxed">${salon.offer}</p></div></div><div class="bg-slate-955/60 border border-slate-900/60 rounded-xl p-3 space-y-2"><p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex justify-between items-center"><span>${currentLang==='en'?'Service Rates':'सेवाओं की दरें'}</span><span class="text-emerald-400 font-extrabold">₹ Rs</span></p><div id="salon-expand-rates-${salon.id}" class="grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-slate-355 max-h-24 overflow-y-auto no-scrollbar pr-1"></div></div><button onclick="event.stopPropagation(); triggerBooking('${salon.id}')" class="w-full bg-brand-600 hover:bg-brand-700 text-white py-2.5 rounded-xl font-bold text-xs tracking-wide transition-all flex items-center justify-center space-x-1.5 shadow-lg"><i class="fa-solid fa-ticket"></i><span>${currentLang==='en'?'Choose Barber & Book Now':'नाई चुनें और टोकन बुक करें'}</span></button></div>`;
+    container.appendChild(card);
+  });
+}ontainer=document.getElementById('salonsListContainer');const countLabel=document.getElementById('salonsCountLabel');if(!container)return;container.innerHTML='';if(countLabel){countLabel.innerText=`${salons.length} ${salons.length===1?(currentLang==='en'?'Salon':'सैलून'):(currentLang==='en'?'Salons':'सैलून')}`}if(salons.length===0){container.innerHTML=`<div class="text-center py-8 text-slate-500 text-xs">${currentLang==='en'?'No salons found':'कोई सैलून नहीं मिला'}</div>`;return}salons.forEach(salon=>{const status=getSalonStatus(salon);const isClosed=status==='closed';const statusColor=isClosed?'text-rose-400':(status==='full'?'text-orange-400':(status==='busy'?'text-amber-400':'text-emerald-400'));const statusText=isClosed?(currentLang==='en'?'Closed':'बंद'):(status==='full'?t('highDemandStatus'):(status==='busy'?t('standardStatus'):t('fastPassStatus')));const reviews=historyData.filter(t=>t.salonId===salon.id&&t.feedback&&t.feedback.salonRating);let avgRating=4.8;if(reviews.length>0){const sum=reviews.reduce((acc,r)=>acc+r.feedback.salonRating,0);avgRating=sum/reviews.length}const reviewCount=reviews.length+3;const distanceStr=getDistanceString(salon.coords);const card=document.createElement('div');card.id=`salon-card-${salon.id}`;card.className="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-xl flex flex-col space-y-3 cursor-pointer hover:border-brand-500 transition-all";card.onclick=()=>selectSalonFromList(salon.id,false);card.innerHTML=`<div class="flex justify-between items-start space-x-3"><div class="flex-grow min-w-0"><h3 class="font-outfit font-bold text-base text-white truncate">${salon.name}</h3><div class="flex items-center text-xs text-amber-400 space-x-1 mt-0.5"><span class="font-extrabold">${avgRating.toFixed(1)}</span><div class="flex text-[10px] text-amber-450">${getStarsHtml(avgRating)}</div><span class="text-slate-550 font-medium">(${reviewCount}) · Salon</span></div><p class="text-xs text-slate-455 mt-1 truncate"><span class="${statusColor} font-bold">${statusText}</span> · ${salon.address.split(',')[0]} (${distanceStr})</p></div><div class="w-20 h-16 rounded-xl overflow-hidden flex-shrink-0 bg-slate-955 border border-slate-800/80"><img src="${salon.image||'/images/default_salon.png'}" alt="${salon.name}" class="w-full h-full object-cover"></div></div><div id="salon-expand-${salon.id}" class="hidden border-t border-slate-850 pt-3.5 space-y-3"><div class="bg-brand-950/40 border border-brand-900/30 rounded-xl p-3 flex items-start space-x-2.5"><i class="fa-solid fa-gift text-brand-400 mt-0.5 animate-pulse-slow"></i><div class="flex-grow"><p class="text-[9px] font-bold text-brand-400 uppercase tracking-wider">${currentLang==='en'?'Current Offer':'सक्रिय ऑफर'}</p><p class="text-xs text-slate-300 font-medium leading-relaxed">${salon.offer}</p></div></div><div class="bg-slate-955/60 border border-slate-900/60 rounded-xl p-3 space-y-2"><p class="text-[10px] font-bold text-slate-400 uppercase tracking-wider flex justify-between items-center"><span>${currentLang==='en'?'Service Rates':'सेवाओं की दरें'}</span><span class="text-emerald-400 font-extrabold">₹ Rs</span></p><div id="salon-expand-rates-${salon.id}" class="grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-slate-355 max-h-24 overflow-y-auto no-scrollbar pr-1"></div></div><button onclick="event.stopPropagation(); triggerBooking('${salon.id}')" class="w-full bg-brand-600 hover:bg-brand-700 text-white py-2.5 rounded-xl font-bold text-xs tracking-wide transition-all flex items-center justify-center space-x-1.5 shadow-lg"><i class="fa-solid fa-ticket"></i><span>${currentLang==='en'?'Choose Barber & Book Now':'नाई चुनें और टोकन बुक करें'}</span></button></div>`;container.appendChild(card)})}
 
 async function selectBarber(barber){selectedBarber=barber;selectedServices=[];comboRewardAutoAdded=false;renderBarbersList();try{const res=await fetch(`/api/services/${selectedSalon.id}`);salonServicesData=await res.json();renderServicesGrid()}catch(e){console.error(e)}checkBookingState();updateEmergencyAlert()}
 function renderServicesGrid(){const container=document.getElementById('servicesGrid');container.innerHTML='';if(!selectedSalon){container.innerHTML=`<p class="text-xs text-slate-500 text-center col-span-2">${t('selectSalon')}</p>`;return}if(!selectedBarber){container.innerHTML=`<p class="text-xs text-brand-400 text-center font-semibold col-span-2 py-4">${currentLang==='en'?'← Please choose your barber first.':'← कृपया पहले अपना नाई चुनें।'}</p>`;return}if(salonServicesData.length===0){container.innerHTML=`<p class="text-xs text-slate-500 text-center col-span-2">No services available.</p>`;return}const comboTriggered=selectedSalon.comboActive&&selectedSalon.comboTriggerServiceIds&&selectedSalon.comboTriggerServiceIds.length>0&&selectedSalon.comboRewardServiceId&&selectedSalon.comboTriggerServiceIds.every(tid=>selectedServices.includes(tid));salonServicesData.forEach(srv=>{const isSelected=selectedServices.includes(srv.id),duration=srv.times[selectedBarber.name]||15;const isFree=comboTriggered&&srv.id===selectedSalon.comboRewardServiceId;const priceDisplay=isFree?`<span class="text-xs font-extrabold text-emerald-400 ml-1.5 animate-pulse">FREE (₹0)</span>`:`<span class="text-xs font-extrabold text-emerald-400 ml-1.5">₹${srv.price||0}</span>`;const card=document.createElement('div');card.className=`bg-slate-900 border ${isSelected?'border-brand-500 glow-border-brand':'border-slate-800'} rounded-xl p-3 cursor-pointer hover:border-brand-500 transition-all flex items-start space-x-2.5`;card.onclick=()=>toggleService(srv.id);card.innerHTML=`<span class="w-7 h-7 rounded-lg bg-slate-955 border border-slate-800 flex items-center justify-center text-brand-400 flex-shrink-0"><i class="fa-solid ${srv.icon} text-xs"></i></span><div class="flex-grow min-w-0"><div class="flex justify-between items-center"><p class="text-xs font-bold text-white truncate leading-tight">${currentLang==='en'?srv.nameEn:srv.nameHi}</p>${priceDisplay}</div><p class="text-[10px] text-slate-500 mt-0.5">${duration} ${t('mins')}</p></div>`;container.appendChild(card)})}
@@ -49,7 +83,108 @@ function updateServiceTimesSum(){const sumEl=document.getElementById('serviceDur
 function checkBookingState(){const btn=document.getElementById('bookTokenBtn'),helper=document.getElementById('bookingHelperText'),warning=document.getElementById('salonClosedWarning');if(selectedSalon&&getSalonStatus(selectedSalon)==='closed'){if(warning){warning.classList.remove('hidden');document.getElementById('salonClosedWarningText').innerText=currentLang==='en'?"This salon is closed today. Booking is not available.":"यह सैलून आज बंद है। बुकिंग उपलब्ध नहीं है।"}btn.disabled=true;btn.className="w-full bg-slate-900 text-slate-600 py-3 rounded-xl font-bold text-sm tracking-wide cursor-not-allowed flex items-center justify-center space-x-2";helper.className="text-[11px] text-center text-rose-500 font-semibold";helper.innerText=currentLang==='en'?"Salon is closed.":"सैलून बंद है।";return}if(warning)warning.classList.add('hidden');const activeBarbers=selectedSalon?selectedSalon.barbers.filter(b=>!b.onLeave):[];if(activeBarbers.length===0){btn.disabled=true;btn.className="w-full bg-slate-900 text-slate-600 py-3 rounded-xl font-bold text-sm tracking-wide cursor-not-allowed flex items-center justify-center space-x-2";helper.className="text-[11px] text-center text-rose-455 font-medium";helper.innerText=currentLang==='en'?"No barbers available.":"कोई नाई उपलब्ध नहीं है।";return}if(selectedSalon&&selectedBarber&&selectedServices.length>0){btn.disabled=false;btn.className="w-full bg-gradient-to-r from-brand-600 to-indigo-500 hover:from-brand-700 hover:to-indigo-600 text-white py-3 rounded-xl font-bold text-sm tracking-wide cursor-pointer transition-all flex items-center justify-center space-x-2 shadow-lg shadow-brand-500/10";helper.className="text-[11px] text-center text-slate-400 font-medium";const names=selectedServices.map(id=>{const s=salonServicesData.find(srv=>srv.id===id);return s?(currentLang==='en'?s.nameEn:s.nameHi):''}).filter(Boolean).join(', ');const duration=selectedServices.reduce((sum,id)=>{const s=salonServicesData.find(srv=>srv.id===id);return sum+(s?(s.times[selectedBarber.name]||0):0)},0);const comboTriggered=selectedSalon.comboActive&&selectedSalon.comboTriggerServiceIds&&selectedSalon.comboTriggerServiceIds.length>0&&selectedSalon.comboRewardServiceId&&selectedSalon.comboTriggerServiceIds.every(tid=>selectedServices.includes(tid));const totalPrice=selectedServices.reduce((sum,id)=>{if(comboTriggered&&id===selectedSalon.comboRewardServiceId)return sum;const s=salonServicesData.find(srv=>srv.id===id);return sum+(s?(s.price||0):0)},0);helper.innerText=t('selectedServicesSummary').replace('{count}',selectedServices.length).replace('{list}',names).replace('{duration}',duration)+' | Total: ₹'+totalPrice}else{btn.disabled=true;btn.className="w-full bg-slate-900 text-slate-600 py-3 rounded-xl font-bold text-sm tracking-wide cursor-not-allowed flex items-center justify-center space-x-2";helper.className="text-[11px] text-center text-slate-500 font-medium";helper.innerText=currentLang==='en'?"Select a salon, barber, and services to book a token.":"टोकन बुक करने के लिए सैलून, नाई और सेवाएं चुनें।"}}
 function openBookingModal(){if(!selectedSalon||!selectedBarber||selectedServices.length===0)return;navigateTo('confirm');document.getElementById('modalSalonLabel').innerText=selectedSalon.name;document.getElementById('modalBarberLabel').innerText=(currentLang==='en'?"Barber: ":"नाई: ")+selectedBarber.name;const duration=selectedServices.reduce((sum,id)=>{const s=salonServicesData.find(srv=>srv.id===id);return sum+(s?(s.times[selectedBarber.name]||0):0)},0);const comboTriggered=selectedSalon.comboActive&&selectedSalon.comboTriggerServiceIds&&selectedSalon.comboTriggerServiceIds.length>0&&selectedSalon.comboRewardServiceId&&selectedSalon.comboTriggerServiceIds.every(tid=>selectedServices.includes(tid));const basePrice=selectedServices.reduce((sum,id)=>{if(comboTriggered&&id===selectedSalon.comboRewardServiceId)return sum;const s=salonServicesData.find(srv=>srv.id===id);return sum+(s?(s.price||0):0)},0);function updateConfirmModalPrice(){const isEmergency=document.getElementById('emergencyBookingToggle')&&document.getElementById('emergencyBookingToggle').checked;const finalPrice=basePrice+(isEmergency?100:0);document.getElementById('modalDurationLabel').innerText=`${duration} mins | Total: ₹${finalPrice}`}const toggle=document.getElementById('emergencyBookingToggle');if(toggle){toggle.onchange=updateConfirmModalPrice}updateConfirmModalPrice();document.getElementById('modalOfferText').innerText=selectedSalon.offer;const servicesWithPrices=selectedServices.map(id=>{const s=salonServicesData.find(srv=>srv.id===id);if(!s)return id;const name=currentLang==='en'?s.nameEn:s.nameHi;const price=(comboTriggered&&id===selectedSalon.comboRewardServiceId)?0:(s.price||0);return`${name} (₹${price})`}).join(', ');document.getElementById('modalServicesList').innerText=(currentLang==='en'?"Services: ":"सेवाएं: ")+servicesWithPrices;const loggedInMobile=localStorage.getItem('customer_mobile');if(loggedInMobile){const input=document.getElementById('mobileNumberInput');if(input){input.value=loggedInMobile;input.readOnly=false}}}
 function getBarberActiveQueue(salonId,barberName){return historyData.filter(t=>t.status==='active'&&t.salonId===salonId&&t.barberName===barberName).sort((a,b)=>(a.bookingTimeMs||0)-(b.bookingTimeMs||0))}
-async function confirmBooking(){const mobileInput=document.getElementById('mobileNumberInput').value.trim();const travelInput=parseInt(document.getElementById('travelTimeInput').value.trim(),10);if(!/^\d{10}$/.test(mobileInput)){alert(t('invalidMobile'));return}if(isNaN(travelInput)||travelInput<=0||travelInput>180){alert(t('invalidTravel'));return}const tokenNumber=1;const servicesDuration=selectedServices.reduce((sum,id)=>{const s=salonServicesData.find(srv=>srv.id===id);return sum+(s?(s.times[selectedBarber.name]||0):0)},0);const isEmergency=document.getElementById('emergencyBookingToggle')?document.getElementById('emergencyBookingToggle').checked:false;const comboTriggered=selectedSalon.comboActive&&selectedSalon.comboTriggerServiceIds&&selectedSalon.comboTriggerServiceIds.length>0&&selectedSalon.comboRewardServiceId&&selectedSalon.comboTriggerServiceIds.every(tid=>selectedServices.includes(tid));const price=selectedServices.reduce((sum,id)=>{if(comboTriggered&&id===selectedSalon.comboRewardServiceId)return sum;const s=salonServicesData.find(srv=>srv.id===id);return sum+(s?(s.price||0):0)},0);const payload={tokenNumber,remainingWait:servicesDuration,initialWait:0,servicesDuration,travelTime:travelInput,mobile:mobileInput,timestamp:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}),bookingTimeMs:Date.now(),dateString:new Date().toLocaleDateString(),salonId:selectedSalon.id,salonName:selectedSalon.name,barberName:selectedBarber.name,servicesIds:[...selectedServices],servicesList:selectedServices.map(id=>{const s=salonServicesData.find(sItem=>sItem.id===id);return s?(currentLang==='en'?s.nameEn:s.nameHi):id}),status:"active",isEmergency,price};try{const res=await fetch('/api/bookings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});if(!res.ok){const err=await res.json();alert(err.error||"Booking failed.");return}const result=await res.json();const newTokenObj=result.booking;localStorage.setItem('customer_mobile',mobileInput);historyData.unshift(newTokenObj);if(result.gapConsumedId){queueGaps=queueGaps.filter(g=>g.id!==result.gapConsumedId)}playSound('success');resetFormSelections();startPolling();startLocalTick();renderTrackerUI();updateTrackerBtnVisibility();navigateTo('tracking')}catch(e){console.error(e)}}
+async function confirmBooking(){
+  const mobileInput=document.getElementById('mobileNumberInput').value.trim();
+  const travelInput=parseInt(document.getElementById('travelTimeInput').value.trim(),10);
+  if(!/^\d{10}$/.test(mobileInput)){
+    alert(t('invalidMobile'));
+    return;
+  }
+  if(isNaN(travelInput)||travelInput<=0||travelInput>180){
+    alert(t('invalidTravel'));
+    return;
+  }
+  const tokenNumber=1;
+  const servicesDuration=selectedServices.reduce((sum,id)=>{
+    const s=salonServicesData.find(srv=>srv.id===id);
+    return sum+(s?(s.times[selectedBarber.name]||0):0);
+  },0);
+  const isEmergency=document.getElementById('emergencyBookingToggle')?document.getElementById('emergencyBookingToggle').checked:false;
+  const comboTriggered=selectedSalon.comboActive&&selectedSalon.comboTriggerServiceIds&&selectedSalon.comboTriggerServiceIds.length>0&&selectedSalon.comboRewardServiceId&&selectedSalon.comboTriggerServiceIds.every(tid=>selectedServices.includes(tid));
+  const price=selectedServices.reduce((sum,id)=>{
+    if(comboTriggered&&id===selectedSalon.comboRewardServiceId)return sum;
+    const s=salonServicesData.find(srv=>srv.id===id);
+    return sum+(s?(s.price||0):0);
+  },0);
+  const payload={
+    tokenNumber,
+    remainingWait:servicesDuration,
+    initialWait:0,
+    servicesDuration,
+    travelTime:travelInput,
+    mobile:mobileInput,
+    timestamp:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}),
+    bookingTimeMs:Date.now(),
+    dateString:new Date().toLocaleDateString(),
+    salonId:selectedSalon.id,
+    salonName:selectedSalon.name,
+    barberName:selectedBarber.name,
+    servicesIds:[...selectedServices],
+    servicesList:selectedServices.map(id=>{
+      const s=salonServicesData.find(sItem=>sItem.id===id);
+      return s?(currentLang==='en'?s.nameEn:s.nameHi):id;
+    }),
+    status:"active",
+    isEmergency,
+    price
+  };
+  try{
+    // Clear owner credentials to prevent session pollution
+    localStorage.removeItem('trimora_owner_logged_in');
+    localStorage.removeItem('trimora_owner_salon_id');
+    loggedInSalonId = null;
+    isSuperAdmin = false;
+    checkOwnerAccess();
+    
+    // Maintain customer session
+    localStorage.setItem('customer_logged_in', 'true');
+    localStorage.setItem('customer_mobile', mobileInput);
+
+    const res=await fetch('/api/bookings',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(payload)
+    });
+    if(!res.ok){
+      const err=await res.json();
+      alert(err.error||"Booking failed.");
+      return;
+    }
+    const result=await res.json();
+    const newTokenObj=result.booking;
+    historyData.unshift(newTokenObj);
+    if(result.gapConsumedId){
+      queueGaps=queueGaps.filter(g=>g.id!==result.gapConsumedId);
+    }
+    
+    playSound('success');
+    
+    // Populate Success Modal
+    document.getElementById('successModalSalonName').innerText = newTokenObj.salonName;
+    document.getElementById('successModalTokenNo').innerText = (currentLang === 'en' ? 'Token #' : 'टोकन संख्या #') + newTokenObj.tokenNumber;
+    document.getElementById('successModalBarberName').innerText = newTokenObj.barberName;
+    document.getElementById('successModalServices').innerText = newTokenObj.servicesList.join(', ');
+    document.getElementById('successModalWaitTime').innerText = newTokenObj.remainingWait.toFixed(0) + ' ' + t('mins');
+    document.getElementById('successModalPrice').innerText = '₹' + newTokenObj.price;
+    
+    // Display Modal
+    document.getElementById('bookingSuccessModal').classList.remove('hidden');
+
+    resetFormSelections();
+    startPolling();
+    startLocalTick();
+    renderTrackerUI();
+    updateTrackerBtnVisibility();
+  }catch(e){
+    console.error(e);
+  }
+}
+
+function closeSuccessModalAndNavigate(screenId) {
+  const modal = document.getElementById('bookingSuccessModal');
+  if (modal) modal.classList.add('hidden');
+  navigateTo(screenId);
+}
 function resetFormSelections(){selectedBarber=null;selectedServices=[];comboRewardAutoAdded=false;const toggle=document.getElementById('emergencyBookingToggle');if(toggle)toggle.checked=false;renderBarbersList();updateServiceTimesSum();checkBookingState()}
 function saveToHistory(tokenObj){}
 function hasUserActiveToken() {
@@ -766,7 +901,65 @@ function renderHistoryList(){const container=document.getElementById('historyLis
 async function clearHistory(){if(confirm(currentLang==='en'?'Are you sure you want to clear your booking history?':'क्या आप वाकई अपनी बुकिंग का इतिहास साफ़ करना चाहते हैं?')){try{await fetch('/api/bookings/clear-history',{method:'POST'});historyData=[];renderHistoryList();updateTrackerBtnVisibility();if(countdownInterval)clearInterval(countdownInterval);navigateTo('home')}catch(e){console.error(e)}}}
 function openLoginModal(){document.getElementById('loginModal').classList.remove('hidden');toggleLoginRegisterView(false)}
 function closeLoginModal(){document.getElementById('loginModal').classList.add('hidden');document.getElementById('loginErrorMsg').classList.add('hidden');document.getElementById('loginIdentityInput').value='';document.getElementById('ownerPasswordInput').value=''}
-async function submitLogin(){const identity=document.getElementById('loginIdentityInput').value.trim();const password=document.getElementById('ownerPasswordInput').value.trim();const errMsg=document.getElementById('loginErrorMsg');if(!identity||!password){errMsg.innerText=currentLang==='en'?"Please fill in all fields.":"कृपया सभी फ़ील्ड भरें।";errMsg.classList.remove('hidden');return}try{const res=await fetch('/api/owners/login',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({identity,password})});if(!res.ok){errMsg.innerText=t('invalidPin');errMsg.classList.remove('hidden');return}const result=await res.json();closeLoginModal();alert(t('loginSuccess'));localStorage.setItem('trimora_owner_logged_in','true');if(result.superAdmin){localStorage.removeItem('trimora_owner_salon_id');loggedInSalonId=null;isSuperAdmin=true;renderMapMarkers(salonsData.filter(s=>s.status!=='pending'));checkOwnerAccess();populateOwnerSalonDropdown();navigateTo('owner');switchOwnerTab('analytics')}else{localStorage.setItem('trimora_owner_salon_id',result.salonId);loggedInSalonId=result.salonId;isSuperAdmin=false;checkOwnerAccess();populateOwnerSalonDropdown();selectedSalon=salonsData.find(s=>s.id===result.salonId);if(selectedSalon){document.getElementById('editOfferInput').value=selectedSalon.offer;const statusInput=document.getElementById('ownerSalonStatusInput');if(statusInput)statusInput.value=selectedSalon.status==='closed'?'closed':'open'}navigateTo('owner');switchOwnerTab('barbers')}}catch(e){console.error(e)}}
+async function submitLogin(){
+  const identity=document.getElementById('loginIdentityInput').value.trim();
+  const password=document.getElementById('ownerPasswordInput').value.trim();
+  const errMsg=document.getElementById('loginErrorMsg');
+  if(!identity||!password){
+    errMsg.innerText=currentLang==='en'?"Please fill in all fields.":"कृपया सभी फ़ील्ड भरें।";
+    errMsg.classList.remove('hidden');
+    return;
+  }
+  try{
+    const res=await fetch('/api/owners/login',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({identity,password})
+    });
+    if(!res.ok){
+      errMsg.innerText=t('invalidPin');
+      errMsg.classList.remove('hidden');
+      return;
+    }
+    const result=await res.json();
+    closeLoginModal();
+    alert(t('loginSuccess'));
+    
+    // Clear customer credentials to isolate owner session
+    localStorage.removeItem('customer_logged_in');
+    localStorage.removeItem('customer_mobile');
+    localStorage.removeItem('customer_name');
+    localStorage.removeItem('customer_email');
+    
+    localStorage.setItem('trimora_owner_logged_in','true');
+    if(result.superAdmin){
+      localStorage.removeItem('trimora_owner_salon_id');
+      loggedInSalonId=null;
+      isSuperAdmin=true;
+      renderMapMarkers(salonsData.filter(s=>s.status!=='pending'));
+      checkOwnerAccess();
+      populateOwnerSalonDropdown();
+      navigateTo('owner');
+      switchOwnerTab('analytics');
+    }else{
+      localStorage.setItem('trimora_owner_salon_id',result.salonId);
+      loggedInSalonId=result.salonId;
+      isSuperAdmin=false;
+      checkOwnerAccess();
+      populateOwnerSalonDropdown();
+      selectedSalon=salonsData.find(s=>s.id===result.salonId);
+      if(selectedSalon){
+        document.getElementById('editOfferInput').value=selectedSalon.offer;
+        const statusInput=document.getElementById('ownerSalonStatusInput');
+        if(statusInput)statusInput.value=selectedSalon.status==='closed'?'closed':'open';
+      }
+      navigateTo('owner');
+      switchOwnerTab('barbers');
+    }
+  }catch(e){
+    console.error(e);
+  }
+}
 let tempRegistrationId=null;
 function handleRegPhotoUpload(event) {
   const file = event.target.files[0];
@@ -798,8 +991,138 @@ function clearRegPhoto() {
 }
 
 function toggleLoginRegisterView(isRegister){const loginView=document.getElementById('owner-login-view');const regView=document.getElementById('owner-register-view');const errMsg=document.getElementById('loginErrorMsg');const regErrMsg=document.getElementById('registerErrorMsg');if(errMsg)errMsg.classList.add('hidden');if(regErrMsg)regErrMsg.classList.add('hidden');if(isRegister){loginView.classList.add('hidden');regView.classList.remove('hidden');backToRegisterFields()}else{loginView.classList.remove('hidden');regView.classList.add('hidden')}}
-async function submitRegisterOwner(){const ownerName=document.getElementById('regOwnerName').value.trim();const mobile=document.getElementById('regOwnerMobile').value.trim();const email=document.getElementById('regOwnerEmail').value.trim();const salonName=document.getElementById('regSalonName').value.trim();const type=document.getElementById('regSalonType').value;const address=document.getElementById('regSalonAddress').value.trim();const lat=parseFloat(document.getElementById('regSalonLat').value);const lng=parseFloat(document.getElementById('regSalonLng').value);const password=document.getElementById('regOwnerPassword').value.trim();const regErrMsg=document.getElementById('registerErrorMsg');if(!ownerName){regErrMsg.innerText=currentLang==='en'?"Please enter Owner Name.":"कृपया मालिक का नाम दर्ज करें।";regErrMsg.classList.remove('hidden');return}if(!mobile||!/^\d{10}$/.test(mobile)){regErrMsg.innerText=t('invalidMobile');regErrMsg.classList.remove('hidden');return}if(!email||!/^\S+@\S+\.\S+$/.test(email)){regErrMsg.innerText=currentLang==='en'?"Please enter a valid email address.":"कृपया एक वैध ईमेल पता दर्ज करें।";regErrMsg.classList.remove('hidden');return}if(!salonName){regErrMsg.innerText=currentLang==='en'?"Please enter Salon Name.":"कृपया सैलून का नाम दर्ज करें।";regErrMsg.classList.remove('hidden');return}if(!address){regErrMsg.innerText=currentLang==='en'?"Please enter Salon Address.":"कृपया सैलून का पता दर्ज करें।";regErrMsg.classList.remove('hidden');return}if(isNaN(lat)||isNaN(lng)){regErrMsg.innerText=currentLang==='en'?"Please enter valid coordinates.":"कृपया वैध निर्देशांक दर्ज करें।";regErrMsg.classList.remove('hidden');return}if(!regPhotoBase64){regErrMsg.innerText=currentLang==='en'?"Please upload a photo of your salon.":"कृपया अपने सैलून की एक फोटो अपलोड करें।";regErrMsg.classList.remove('hidden');return}if(!password||password.length<6){regErrMsg.innerText=currentLang==='en'?"Password must be at least 6 characters.":"पासवर्ड कम से कम 6 अक्षरों का होना चाहिए।";regErrMsg.classList.remove('hidden');return}const salonId='salon_'+salonName.toLowerCase().replace(/\s+/g,'_');try{const res=await fetch('/api/owners/register',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({salonId,salonName,mobile,email,password,ownerName,address,coords:[lat,lng],image:regPhotoBase64,type})});if(!res.ok){let errMsgText="Registration failed.";try{const err=await res.json();errMsgText=err.error||errMsgText}catch(jsonErr){errMsgText=`Server Error: ${res.status} (${res.statusText||'Request failed'})`}regErrMsg.innerText=errMsgText;regErrMsg.classList.remove('hidden');return}const result=await res.json();tempRegistrationId=result.tempId;triggerOtpNotification(result.otp,mobile,email);document.getElementById('reg-fields-container').classList.add('hidden');document.getElementById('reg-otp-container').classList.remove('hidden')}catch(e){console.error(e);regErrMsg.innerText=currentLang==='en'?"An unexpected error occurred.":"एक अप्रत्याशित त्रुटि हुई।";regErrMsg.classList.remove('hidden')}}
-function triggerOtpNotification(otp,mobile,email){playSound('alert');const last4=mobile.slice(-4);const text=currentLang==='en'?`💬 ZeroWait Q Alert: Your verification OTP is ${otp}. Sent to Mobile (******${last4}) & Email (${email}).`:`💬 जीरोवेट क्यू अलर्ट: आपका सत्यापन ओटीपी ${otp} है। मोबाइल (******${last4}) और ईमेल (${email}) पर भेजा गया है।`;document.getElementById('whatsappMsgText').innerText=text;document.getElementById('notificationTime').innerText=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});const notification=document.getElementById('whatsappNotification');if(notification){notification.classList.remove('-translate-y-full');setTimeout(()=>closeWhatsAppNotification(),10000)}}
+async function submitRegisterOwner(){
+  const ownerName=document.getElementById('regOwnerName').value.trim();
+  const mobile=document.getElementById('regOwnerMobile').value.trim();
+  const email=document.getElementById('regOwnerEmail').value.trim();
+  const salonName=document.getElementById('regSalonName').value.trim();
+  const type=document.getElementById('regSalonType').value;
+  const address=document.getElementById('regSalonAddress').value.trim();
+  const password=document.getElementById('regOwnerPassword').value.trim();
+  const regErrMsg=document.getElementById('registerErrorMsg');
+
+  if(!ownerName){
+    regErrMsg.innerText=currentLang==='en'?"Please enter Owner Name.":"कृपया मालिक का नाम दर्ज करें।";
+    regErrMsg.classList.remove('hidden');
+    return;
+  }
+  if(!mobile||!/^\d{10}$/.test(mobile)){
+    regErrMsg.innerText=t('invalidMobile');
+    regErrMsg.classList.remove('hidden');
+    return;
+  }
+  if(!email||!/^\S+@\S+\.\S+$/.test(email)){
+    regErrMsg.innerText=currentLang==='en'?"Please enter a valid email address.":"कृपया एक वैध ईमेल पता दर्ज करें।";
+    regErrMsg.classList.remove('hidden');
+    return;
+  }
+  if(!salonName){
+    regErrMsg.innerText=currentLang==='en'?"Please enter Salon Name.":"कृपया सैलून का नाम दर्ज करें।";
+    regErrMsg.classList.remove('hidden');
+    return;
+  }
+  if(!address){
+    regErrMsg.innerText=currentLang==='en'?"Please enter Salon Address.":"कृपया सैलून का पता दर्ज करें।";
+    regErrMsg.classList.remove('hidden');
+    return;
+  }
+  if(!regPhotoBase64){
+    regErrMsg.innerText=currentLang==='en'?"Please upload a photo of your salon.":"कृपया अपने सैलून की एक फोटो अपलोड करें।";
+    regErrMsg.classList.remove('hidden');
+    return;
+  }
+  if(!password||password.length<6){
+    regErrMsg.innerText=currentLang==='en'?"Password must be at least 6 characters.":"पासवर्ड कम से कम 6 अक्षरों का होना चाहिए।";
+    regErrMsg.classList.remove('hidden');
+    return;
+  }
+
+  // Geocode address
+  regErrMsg.innerText = currentLang === 'en' ? "Geocoding address coordinates..." : "पते के निर्देशांक खोजे जा रहे हैं...";
+  regErrMsg.classList.remove('hidden');
+  regErrMsg.className = "text-[10px] text-indigo-400 text-center font-bold";
+
+  let lat = 29.1492;
+  let lng = 75.7217;
+  try {
+    const geoRes = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`);
+    if (geoRes.ok) {
+      const geoData = await geoRes.json();
+      if (geoData && geoData.length > 0) {
+        lat = parseFloat(geoData[0].lat);
+        lng = parseFloat(geoData[0].lon);
+      } else {
+        const baseLat = (userLocation && userLocation[0]) ? userLocation[0] : 29.1492;
+        const baseLng = (userLocation && userLocation[1]) ? userLocation[1] : 75.7217;
+        lat = baseLat + (Math.random() - 0.5) * 0.02;
+        lng = baseLng + (Math.random() - 0.5) * 0.02;
+      }
+    }
+  } catch (e) {
+    console.error("Geocoding failed, using fallback:", e);
+    const baseLat = (userLocation && userLocation[0]) ? userLocation[0] : 29.1492;
+    const baseLng = (userLocation && userLocation[1]) ? userLocation[1] : 75.7217;
+    lat = baseLat + (Math.random() - 0.5) * 0.02;
+    lng = baseLng + (Math.random() - 0.5) * 0.02;
+  }
+
+  regErrMsg.className = "text-[10px] text-rose-400 text-center font-medium";
+  const salonId='salon_'+salonName.toLowerCase().replace(/\s+/g,'_');
+  try{
+    // Clear customer credentials to isolate owner registration path
+    localStorage.removeItem('customer_logged_in');
+    localStorage.removeItem('customer_mobile');
+    localStorage.removeItem('customer_name');
+    localStorage.removeItem('customer_email');
+
+    const res=await fetch('/api/owners/register',{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({salonId,salonName,mobile,email,password,ownerName,address,coords:[lat,lng],image:regPhotoBase64,type})
+    });
+    if(!res.ok){
+      let errMsgText="Registration failed.";
+      try{
+        const err=await res.json();
+        errMsgText=err.error||errMsgText;
+      }catch(jsonErr){
+        errMsgText=`Server Error: ${res.status}`;
+      }
+      regErrMsg.innerText=errMsgText;
+      regErrMsg.classList.remove('hidden');
+      return;
+    }
+    const result=await res.json();
+    tempRegistrationId=result.tempId;
+    triggerOtpNotification(result.otp,mobile,email);
+    document.getElementById('reg-fields-container').classList.add('hidden');
+    document.getElementById('reg-otp-container').classList.remove('hidden');
+  }catch(e){
+    console.error(e);
+    regErrMsg.innerText=currentLang==='en'?"An unexpected error occurred.":"एक अप्रत्याशित त्रुटि हुई।";
+    regErrMsg.classList.remove('hidden');
+  }
+}
+
+function triggerOtpNotification(otp,mobile,email){
+  playSound('alert');
+  const last4=mobile.slice(-4);
+  const text=currentLang==='en'?`💬 ZeroWait Q Alert: Your verification OTP is ${otp}. Sent to Mobile (******${last4}) & Email (${email}).`:`💬 जीरोवेट क्यू अलर्ट: आपका सत्यापन ओटीपी ${otp} है। मोबाइल (******${last4}) और ईमेल (${email}) पर भेजा गया है।`;
+  document.getElementById('whatsappMsgText').innerText=text;
+  document.getElementById('notificationTime').innerText=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+  const notification=document.getElementById('whatsappNotification');
+  if(notification){
+    notification.classList.remove('-translate-y-full');
+    setTimeout(()=>closeWhatsAppNotification(),10000);
+  }
+  
+  // Set the on-screen helper hint and trigger browser alert
+  const hintEl = document.getElementById('regOtpHint');
+  if (hintEl) {
+    hintEl.innerText = currentLang === 'en' ? `(For testing, OTP is: ${otp})` : `(परीक्षण के लिए, ओटीपी: ${otp})`;
+  }
+  alert(currentLang === 'en' ? `Your ZeroWait Q verification OTP is: ${otp}` : `आपका ज़ीरोवेट क्यू सत्यापन ओटीपी है: ${otp}`);
+}
 function backToRegisterFields(){document.getElementById('reg-otp-container').classList.add('hidden');document.getElementById('reg-fields-container').classList.remove('hidden')}
 async function submitVerifyOtp(){const otp=document.getElementById('regOtpInput').value.trim();const errMsg=document.getElementById('otpErrorMsg');if(!/^\d{6}$/.test(otp)){errMsg.innerText=currentLang==='en'?"Please enter a valid 6-digit OTP.":"कृपया एक वैध 6-अंकीय ओटीपी दर्ज करें।";errMsg.classList.remove('hidden');return}try{const res=await fetch('/api/owners/verify-otp',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({tempId:tempRegistrationId,otp})});if(!res.ok){const err=await res.json();errMsg.innerText=err.error;errMsg.classList.remove('hidden');return}const resSalons=await fetch('/api/salons');salonsData=await resSalons.json();const resOwners=await fetch('/api/owners');ownersData=await resOwners.json();alert(currentLang==='en'?"Salon registered successfully! You can now login.":"सैलून सफलतापूर्वक पंजीकृत हो गया! अब आप लॉगिन कर सकते हैं।");toggleLoginRegisterView(false);document.getElementById('regOwnerName').value='';document.getElementById('regOwnerMobile').value='';document.getElementById('regOwnerEmail').value='';document.getElementById('regSalonName').value='';document.getElementById('regSalonAddress').value='';document.getElementById('regSalonLat').value='';document.getElementById('regSalonLng').value='';document.getElementById('regOwnerPassword').value='';document.getElementById('regOtpInput').value='';clearRegPhoto()}catch(e){console.error(e)}}
 function checkOwnerAccess(){const isLoggedIn=localStorage.getItem('trimora_owner_logged_in')==='true';const fab=document.getElementById('ownerPanelFAB');if(fab){if(isLoggedIn){fab.classList.remove('hidden')}else{fab.classList.add('hidden')}}const approvalsBtn=document.getElementById('tabApprovalsBtn');if(approvalsBtn){if(isLoggedIn&&isSuperAdmin){approvalsBtn.classList.remove('hidden')}else{approvalsBtn.classList.add('hidden')}}}
@@ -1261,6 +1584,13 @@ async function submitCustomerLogin() {
     localStorage.setItem('customer_mobile', result.customer.mobile);
     localStorage.setItem('customer_email', result.customer.email);
     
+    // Clear owner credentials to prevent session pollution
+    localStorage.removeItem('trimora_owner_logged_in');
+    localStorage.removeItem('trimora_owner_salon_id');
+    loggedInSalonId = null;
+    isSuperAdmin = false;
+    checkOwnerAccess();
+    
     document.getElementById('customerLoginIdentity').value = '';
     document.getElementById('customerLoginPassword').value = '';
     
@@ -1328,6 +1658,13 @@ async function submitCustomerRegister() {
     localStorage.setItem('customer_name', name);
     localStorage.setItem('customer_mobile', mobile);
     localStorage.setItem('customer_email', email);
+    
+    // Clear owner credentials to prevent session pollution
+    localStorage.removeItem('trimora_owner_logged_in');
+    localStorage.removeItem('trimora_owner_salon_id');
+    loggedInSalonId = null;
+    isSuperAdmin = false;
+    checkOwnerAccess();
     
     document.getElementById('customerRegisterName').value = '';
     document.getElementById('customerRegisterMobile').value = '';
@@ -1461,6 +1798,13 @@ function triggerForgotOtpNotification(otp, mobile) {
       }
     }, 10000);
   }
+
+  // Set the on-screen helper hint and trigger browser alert
+  const hintEl = document.getElementById('customerForgotOtpHint');
+  if (hintEl) {
+    hintEl.innerText = currentLang === 'en' ? `(For testing, OTP is: ${otp})` : `(परीक्षण के लिए, ओटीपी: ${otp})`;
+  }
+  alert(currentLang === 'en' ? `Your password reset OTP is: ${otp}` : `आपका पासवर्ड रीसेट ओटीपी है: ${otp}`);
 }
 
 async function submitPasswordReset() {
