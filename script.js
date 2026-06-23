@@ -650,15 +650,21 @@ function renderTrackerUI(){
     const elapsedMins = (Date.now() - (token.bookingTimeMs || Date.now())) / (60 * 1000);
     const isTraveling = isHead && (elapsedMins < (token.travelTime || 0));
     
-    let waitTime=0;
-    if(!isHead && idx>0){
-      const first=activeTimeline[0];
+    let waitTime = 0;
+    if (isHead) {
+      if (isTraveling) {
+        waitTime = Math.max(0, (token.travelTime || 0) - elapsedMins);
+      } else {
+        waitTime = token.remainingWait;
+      }
+    } else if (idx > 0) {
+      const first = activeTimeline[0];
       const firstElapsed = (Date.now() - (first.bookingTimeMs || Date.now())) / (60 * 1000);
       const firstRemainingTravel = first.tokenNumber ? Math.max(0, (first.travelTime || 0) - firstElapsed) : 0;
       waitTime = (first.tokenNumber ? first.remainingWait : first.duration) + firstRemainingTravel;
-      for(let i=1;i<idx;i++){
-        const item=activeTimeline[i];
-        waitTime+=item.tokenNumber?item.servicesDuration:item.duration;
+      for (let i = 1; i < idx; i++) {
+        const item = activeTimeline[i];
+        waitTime += item.tokenNumber ? item.servicesDuration : item.duration;
       }
     }
     const posText=isTraveling
@@ -666,8 +672,8 @@ function renderTrackerUI(){
       : (isHead ? (currentLang==='en'?'Serving Now':'अभी सेवा जारी') : (currentLang==='en'?'In Queue (Pos: ' + idx + ')':'कतार में (स्थान: ' + idx + ')'));
     const initialWaitToStart = (token.initialWait || 0) - (token.servicesDuration || 0);
     const progressPercent = isHead
-      ? (isTraveling ? 0 : Math.max(0, Math.min(100, (token.remainingWait / (token.servicesDuration || 1)) * 100)))
-      : (initialWaitToStart > 0 ? Math.max(0, Math.min(100, (waitTime / initialWaitToStart) * 100)) : 100);
+      ? (isTraveling ? 0 : Math.max(0, Math.min(100, (1 - token.remainingWait / (token.servicesDuration || 1)) * 100)))
+      : (initialWaitToStart > 0 ? Math.max(0, Math.min(100, (1 - waitTime / initialWaitToStart) * 100)) : 100);
     const borderClass=token.isEmergency?'border-amber-500 shadow-[0_0_12px_rgba(245,158,11,0.35)]':'border-brand-900/50';
     const glowClass=token.isEmergency?'text-amber-400':'text-brand-400';
     const vipBadge=token.isEmergency?'<span class="bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[9px] px-2 py-0.5 rounded-full font-bold ml-1.5 flex items-center space-x-0.5"><i class="fa-solid fa-crown text-[8px]"></i><span>VIP</span></span>':'';
