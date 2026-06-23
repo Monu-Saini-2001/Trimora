@@ -555,15 +555,17 @@ async function fetchLatestDataSilently() {
         const userActiveTokens = newHistory.filter(t => t.mobile === loggedInMobile && t.status === 'active');
         userActiveTokens.forEach(token => {
           const timeline = getBarberTimeline(token.salonId, token.barberName);
-          const idx = timeline.findIndex(t => (t._id && token._id && t._id == token._id) || t.tokenNumber == token.tokenNumber);
+          const firstActiveIdx = timeline.findIndex(t => t.tokenNumber !== undefined);
+          const activeTimeline = firstActiveIdx !== -1 ? timeline.slice(firstActiveIdx) : timeline;
+          const idx = activeTimeline.findIndex(t => (t._id && token._id && t._id == token._id) || t.tokenNumber == token.tokenNumber);
           let waitTimeToStart = 0;
           if (idx > 0) {
-            const first = timeline[0];
+            const first = activeTimeline[0];
             const firstElapsed = (Date.now() - (first.bookingTimeMs || Date.now())) / (60 * 1000);
             const firstRemainingTravel = first.tokenNumber ? Math.max(0, (first.travelTime || 0) - firstElapsed) : 0;
             waitTimeToStart = (first.tokenNumber ? first.remainingWait : first.duration) + firstRemainingTravel;
             for (let i = 1; i < idx; i++) {
-              const item = timeline[i];
+              const item = activeTimeline[i];
               waitTimeToStart += item.tokenNumber ? item.servicesDuration : item.duration;
             }
           }
@@ -639,19 +641,21 @@ function renderTrackerUI(){
   let html='';
   activeTokens.forEach(token=>{
     const timeline=getBarberTimeline(token.salonId,token.barberName);
-    const idx=timeline.findIndex(t=>(t._id && token._id && t._id == token._id) || t.tokenNumber == token.tokenNumber);
+    const firstActiveIdx = timeline.findIndex(t => t.tokenNumber !== undefined);
+    const activeTimeline = firstActiveIdx !== -1 ? timeline.slice(firstActiveIdx) : timeline;
+    const idx=activeTimeline.findIndex(t=>(t._id && token._id && t._id == token._id) || t.tokenNumber == token.tokenNumber);
     const isHead=(idx===0);
     const elapsedMins = (Date.now() - (token.bookingTimeMs || Date.now())) / (60 * 1000);
     const isTraveling = isHead && (elapsedMins < (token.travelTime || 0));
     
     let waitTime=0;
     if(!isHead && idx>0){
-      const first=timeline[0];
+      const first=activeTimeline[0];
       const firstElapsed = (Date.now() - (first.bookingTimeMs || Date.now())) / (60 * 1000);
       const firstRemainingTravel = first.tokenNumber ? Math.max(0, (first.travelTime || 0) - firstElapsed) : 0;
       waitTime = (first.tokenNumber ? first.remainingWait : first.duration) + firstRemainingTravel;
       for(let i=1;i<idx;i++){
-        const item=timeline[i];
+        const item=activeTimeline[i];
         waitTime+=item.tokenNumber?item.servicesDuration:item.duration;
       }
     }

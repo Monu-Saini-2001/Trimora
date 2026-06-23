@@ -255,7 +255,20 @@ const startServerCountdown = () => {
       });
 
       for (const key in groups) {
-        const timeline = groups[key].sort((a, b) => (a.bookingTimeMs || 0) - (b.bookingTimeMs || 0));
+        let timeline = groups[key].sort((a, b) => (a.bookingTimeMs || 0) - (b.bookingTimeMs || 0));
+        const activeTokens = timeline.filter(t => t.tokenNumber !== undefined);
+        if (activeTokens.length > 0) {
+          const firstActive = activeTokens[0];
+          const elapsedMins = (Date.now() - (firstActive.bookingTimeMs || Date.now())) / (60 * 1000);
+          if (elapsedMins >= (firstActive.travelTime || 0)) {
+            await QueueGap.deleteMany({
+              salonId: firstActive.salonId,
+              barberName: firstActive.barberName,
+              bookingTimeMs: { $lt: firstActive.bookingTimeMs }
+            });
+            timeline = timeline.filter(item => item.tokenNumber !== undefined || item.bookingTimeMs >= firstActive.bookingTimeMs);
+          }
+        }
         if (timeline.length > 0) {
           const head = timeline[0];
           if (head.tokenNumber !== undefined) {
