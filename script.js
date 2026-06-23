@@ -218,7 +218,7 @@ function updateTrackerBtnVisibility(){const trackerBtn=document.getElementById('
 
 function getStarsHtml(rating){let html='';const fullStars=Math.floor(rating);const halfStar=(rating%1)>=0.4;for(let i=1;i<=5;i++){if(i<=fullStars){html+='★'}else if(i===fullStars+1&&halfStar){html+='½'}else{html+='☆'}}return html}
 
-function getEstWaitTime(salon){if(salon.status==='closed')return 0;const activeBarbers=salon.barbers.filter(b=>!b.onLeave);if(activeBarbers.length===0)return 0;let totalWait=0;activeBarbers.forEach(barber=>{const timeline=getBarberTimeline(salon.id,barber.name);let barberWait=0;timeline.forEach(item=>{barberWait+=item.tokenNumber?item.remainingWait:item.duration});totalWait+=barberWait});return Math.round((totalWait/activeBarbers.length)/5)*5||15}
+function getEstWaitTime(salon){if(salon.status==='closed')return 0;const activeBarbers=salon.barbers.filter(b=>!b.onLeave);if(activeBarbers.length===0)return 0;let totalWait=0;activeBarbers.forEach(barber=>{const timeline=getBarberTimeline(salon.id,barber.name);let barberWait=0;timeline.forEach((item,idx)=>{if(idx===0&&item.tokenNumber){const elapsed=(Date.now()-(item.bookingTimeMs||Date.now()))/(60*1000);const remTravel=Math.max(0,(item.travelTime||0)-elapsed);barberWait+=item.remainingWait+remTravel}else{barberWait+=item.tokenNumber?item.remainingWait:item.duration}});totalWait+=barberWait});return Math.round((totalWait/activeBarbers.length)/5)*5||15}
 
 async function selectSalonFromList(salonId,focusMap=true){selectedSalon=salonsData.find(s=>s.id===salonId);selectedBarber=null;selectedServices=[];comboRewardAutoAdded=false;const card=document.getElementById(`salon-card-${salonId}`);const expandedArea=document.getElementById(`salon-expand-${salonId}`);const ratesArea=document.getElementById(`salon-expand-rates-${salonId}`);salonsData.forEach(s=>{if(s.id!==salonId){const otherExp=document.getElementById(`salon-expand-${s.id}`);if(otherExp)otherExp.classList.add('hidden');const otherCard=document.getElementById(`salon-card-${s.id}`);if(otherCard)otherCard.classList.remove('border-brand-500','glow-border-brand')}});const m=mapMarkers.find(marker=>marker.getLatLng().lat===selectedSalon.coords[0]&&marker.getLatLng().lng===selectedSalon.coords[1]);if(focusMap&&m){map.setView(selectedSalon.coords,14.5);m.openPopup()}if(expandedArea){const isHidden=expandedArea.classList.contains('hidden');if(isHidden){expandedArea.classList.remove('hidden');card.classList.add('border-brand-500','glow-border-brand');if(ratesArea){ratesArea.innerHTML=`<div class="col-span-2 text-center text-[10px] text-slate-500 py-1"><i class="fa-solid fa-spinner animate-spin mr-1"></i>Loading...</div>`;try{const res=await fetch(`/api/services/${salonId}`);const services=await res.json();ratesArea.innerHTML='';if(services.length===0){ratesArea.innerHTML=`<div class="col-span-2 text-center text-slate-500 py-1">No services</div>`}else{services.forEach(srv=>{const name=currentLang==='en'?srv.nameEn:srv.nameHi;const row=document.createElement('div');row.className="flex justify-between items-center py-0.5 border-b border-slate-900/50";row.innerHTML=`<span class="truncate pr-1">${name}</span><span class="font-bold text-emerald-400 flex-shrink-0">₹${srv.price||0}</span>`;ratesArea.appendChild(row)})}}catch(e){console.error(e);ratesArea.innerHTML=`<div class="col-span-2 text-center text-rose-400 py-1">Error</div>`}}card.scrollIntoView({behavior:'smooth',block:'nearest'})}else{expandedArea.classList.add('hidden');card.classList.remove('border-brand-500','glow-border-brand');selectedSalon=null;}}}
 
@@ -491,8 +491,11 @@ function startLocalTick() {
       if (timeline.length > 0) {
         let head = timeline[0];
         if (head.tokenNumber) {
-          head.remainingWait = Math.max(0, head.remainingWait - 1/60);
-          changed = true;
+          const elapsed = (Date.now() - (head.bookingTimeMs || Date.now())) / (60 * 1000);
+          if (elapsed >= (head.travelTime || 0)) {
+            head.remainingWait = Math.max(0, head.remainingWait - 1/60);
+            changed = true;
+          }
         } else {
           head.duration = Math.max(0, head.duration - 1/60);
           changed = true;
@@ -556,7 +559,9 @@ async function fetchLatestDataSilently() {
           let waitTimeToStart = 0;
           if (idx > 0) {
             const first = timeline[0];
-            waitTimeToStart = first.tokenNumber ? first.remainingWait : first.duration;
+            const firstElapsed = (Date.now() - (first.bookingTimeMs || Date.now())) / (60 * 1000);
+            const firstRemainingTravel = first.tokenNumber ? Math.max(0, (first.travelTime || 0) - firstElapsed) : 0;
+            waitTimeToStart = (first.tokenNumber ? first.remainingWait : first.duration) + firstRemainingTravel;
             for (let i = 1; i < idx; i++) {
               const item = timeline[i];
               waitTimeToStart += item.tokenNumber ? item.servicesDuration : item.duration;
@@ -636,19 +641,26 @@ function renderTrackerUI(){
     const timeline=getBarberTimeline(token.salonId,token.barberName);
     const idx=timeline.findIndex(t=>(t._id && token._id && t._id == token._id) || t.tokenNumber == token.tokenNumber);
     const isHead=(idx===0);
+    const elapsedMins = (Date.now() - (token.bookingTimeMs || Date.now())) / (60 * 1000);
+    const isTraveling = isHead && (elapsedMins < (token.travelTime || 0));
+    
     let waitTime=0;
     if(!isHead && idx>0){
       const first=timeline[0];
-      waitTime=first.tokenNumber?first.remainingWait:first.duration;
+      const firstElapsed = (Date.now() - (first.bookingTimeMs || Date.now())) / (60 * 1000);
+      const firstRemainingTravel = first.tokenNumber ? Math.max(0, (first.travelTime || 0) - firstElapsed) : 0;
+      waitTime = (first.tokenNumber ? first.remainingWait : first.duration) + firstRemainingTravel;
       for(let i=1;i<idx;i++){
         const item=timeline[i];
         waitTime+=item.tokenNumber?item.servicesDuration:item.duration;
       }
     }
-    const posText=isHead?(currentLang==='en'?'Serving Now':'अभी सेवा जारी'):(currentLang==='en'?'In Queue (Pos: ' + idx + ')':'कतार में (स्थान: ' + idx + ')');
+    const posText=isTraveling
+      ? (currentLang==='en' ? 'Traveling (Est. Arrival: ' + Math.ceil(token.travelTime - elapsedMins) + ' mins)' : 'रास्ते में (आगमन: ' + Math.ceil(token.travelTime - elapsedMins) + ' मिनट)')
+      : (isHead ? (currentLang==='en'?'Serving Now':'अभी सेवा जारी') : (currentLang==='en'?'In Queue (Pos: ' + idx + ')':'कतार में (स्थान: ' + idx + ')'));
     const initialWaitToStart = (token.initialWait || 0) - (token.servicesDuration || 0);
     const progressPercent = isHead
-      ? Math.max(0, Math.min(100, (token.remainingWait / (token.servicesDuration || 1)) * 100))
+      ? (isTraveling ? 0 : Math.max(0, Math.min(100, (token.remainingWait / (token.servicesDuration || 1)) * 100)))
       : (initialWaitToStart > 0 ? Math.max(0, Math.min(100, (waitTime / initialWaitToStart) * 100)) : 100);
     const borderClass=token.isEmergency?'border-amber-500 shadow-[0_0_12px_rgba(245,158,11,0.35)]':'border-brand-900/50';
     const glowClass=token.isEmergency?'text-amber-400':'text-brand-400';
@@ -710,7 +722,11 @@ function renderTrackerUI(){
           '<p class="text-xs font-semibold text-slate-200">' + token.salonName + '</p>' +
           '<p class="text-[11px] text-slate-355">' + barberLabel + ': <span class="text-brand-300 font-medium">' + token.barberName + '</span></p>' +
           '<p class="text-[10px] text-slate-400 line-clamp-1 px-4">' + token.servicesList.join(', ') + '</p>' +
-          (isHead ? ('<p class="text-[10px] text-emerald-400 font-bold mt-1 text-center">' + (currentLang === 'en' ? 'Service progress: ' : 'सेवा की प्रगति: ') + token.remainingWait.toFixed(1) + ' ' + t('mins') + (currentLang === 'en' ? ' left' : ' शेष') + '</p>') : '') +
+          (isHead ? (
+            isTraveling
+              ? ('<p class="text-[10px] text-amber-400 font-bold mt-1 text-center">' + (currentLang === 'en' ? 'Service will start upon arrival' : 'पहुंचने पर सेवा शुरू होगी') + '</p>')
+              : ('<p class="text-[10px] text-emerald-400 font-bold mt-1 text-center">' + (currentLang === 'en' ? 'Service progress: ' : 'सेवा की प्रगति: ') + token.remainingWait.toFixed(1) + ' ' + t('mins') + (currentLang === 'en' ? ' left' : ' शेष') + '</p>')
+          ) : '') +
         '</div>' +
       '</div>' +
       '<div class="space-y-2 mt-2">' +

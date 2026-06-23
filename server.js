@@ -259,12 +259,15 @@ const startServerCountdown = () => {
         if (timeline.length > 0) {
           const head = timeline[0];
           if (head.tokenNumber !== undefined) {
-            const newRemaining = Math.max(0, head.remainingWait - 1/60);
-            if (newRemaining <= 0) {
-              await Booking.updateOne({ _id: head._id }, { remainingWait: 0, status: 'completed' });
-              await checkSalonAdMilestone(head.salonId);
-            } else {
-              await Booking.updateOne({ _id: head._id }, { remainingWait: newRemaining });
+            const elapsedMins = (Date.now() - (head.bookingTimeMs || Date.now())) / (60 * 1000);
+            if (elapsedMins >= (head.travelTime || 0)) {
+              const newRemaining = Math.max(0, head.remainingWait - 1/60);
+              if (newRemaining <= 0) {
+                await Booking.updateOne({ _id: head._id }, { remainingWait: 0, status: 'completed' });
+                await checkSalonAdMilestone(head.salonId);
+              } else {
+                await Booking.updateOne({ _id: head._id }, { remainingWait: newRemaining });
+              }
             }
           } else {
             const newDuration = Math.max(0, head.duration - 1/60);
