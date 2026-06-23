@@ -289,25 +289,49 @@ const startServerCountdown = () => {
           }
           timeline = [];
         }
-        if (timeline.length > 0) {
-          const head = timeline[0];
-          if (head.tokenNumber !== undefined) {
-            const elapsedMins = (Date.now() - (head.bookingTimeMs || Date.now())) / (60 * 1000);
-            if (elapsedMins >= (head.travelTime || 0)) {
-              const newRemaining = Math.max(0, head.remainingWait - 1/60);
-              if (newRemaining <= 0) {
-                await Booking.updateOne({ _id: head._id }, { remainingWait: 0, status: 'completed' });
-                await checkSalonAdMilestone(head.salonId);
-              } else {
-                await Booking.updateOne({ _id: head._id }, { remainingWait: newRemaining });
+        const now = Date.now();
+        let runningTimeMs = 0;
+        for (let i = 0; i < timeline.length; i++) {
+          const item = timeline[i];
+          if (item.tokenNumber !== undefined) {
+            let startTimeMs = i === 0
+              ? (item.bookingTimeMs + (item.travelTime || 0) * 60 * 1000)
+              : runningTimeMs;
+            startTimeMs = Math.max(startTimeMs, item.bookingTimeMs + (item.travelTime || 0) * 60 * 1000);
+            const endTimeMs = startTimeMs + item.servicesDuration * 60 * 1000;
+
+            if (now >= endTimeMs) {
+              if (item.status === 'active') {
+                await Booking.updateOne({ _id: item._id }, { remainingWait: 0, status: 'completed' });
+                await checkSalonAdMilestone(item.salonId);
               }
+              runningTimeMs = endTimeMs;
+            } else if (now >= startTimeMs) {
+              const rem = (endTimeMs - now) / (60 * 1000);
+              await Booking.updateOne({ _id: item._id }, { remainingWait: rem });
+              runningTimeMs = endTimeMs;
+            } else {
+              if (item.remainingWait !== item.servicesDuration) {
+                await Booking.updateOne({ _id: item._id }, { remainingWait: item.servicesDuration });
+              }
+              runningTimeMs = endTimeMs;
             }
           } else {
-            const newDuration = Math.max(0, head.duration - 1/60);
-            if (newDuration <= 0) {
-              await QueueGap.deleteOne({ _id: head._id });
+            let startTimeMs = i === 0
+              ? item.bookingTimeMs
+              : runningTimeMs;
+            startTimeMs = Math.max(startTimeMs, item.bookingTimeMs);
+            const endTimeMs = startTimeMs + item.duration * 60 * 1000;
+
+            if (now >= endTimeMs) {
+              await QueueGap.deleteOne({ _id: item._id });
+              runningTimeMs = endTimeMs;
+            } else if (now >= startTimeMs) {
+              const rem = (endTimeMs - now) / (60 * 1000);
+              await QueueGap.updateOne({ _id: item._id }, { duration: rem });
+              runningTimeMs = endTimeMs;
             } else {
-              await QueueGap.updateOne({ _id: head._id }, { duration: newDuration });
+              runningTimeMs = endTimeMs;
             }
           }
         }
