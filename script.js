@@ -70,12 +70,12 @@ function renderSalonsList(salons){
     const statusColor=isClosed?'text-rose-400':(status==='full'?'text-orange-400':(status==='busy'?'text-amber-400':'text-emerald-400'));
     const statusText=isClosed?(currentLang==='en'?'Closed':'बंद'):(status==='full'?t('highDemandStatus'):(status==='busy'?t('standardStatus'):t('fastPassStatus')));
     const reviews=historyData.filter(t=>t.salonId===salon.id&&t.feedback&&t.feedback.salonRating);
-    let avgRating=4.8;
+    let avgRating=0.0;
     if(reviews.length>0){
       const sum=reviews.reduce((acc,r)=>acc+r.feedback.salonRating,0);
       avgRating=sum/reviews.length;
     }
-    const reviewCount=reviews.length+3;
+    const reviewCount=reviews.length;
     const distanceStr=getDistanceString(salon.coords);
     const card=document.createElement('div');
     card.id=`salon-card-${salon.id}`;
@@ -222,7 +222,7 @@ function getEstWaitTime(salon){if(salon.status==='closed')return 0;const activeB
 
 async function selectSalonFromList(salonId,focusMap=true){selectedSalon=salonsData.find(s=>s.id===salonId);selectedBarber=null;selectedServices=[];comboRewardAutoAdded=false;const card=document.getElementById(`salon-card-${salonId}`);const expandedArea=document.getElementById(`salon-expand-${salonId}`);const ratesArea=document.getElementById(`salon-expand-rates-${salonId}`);salonsData.forEach(s=>{if(s.id!==salonId){const otherExp=document.getElementById(`salon-expand-${s.id}`);if(otherExp)otherExp.classList.add('hidden');const otherCard=document.getElementById(`salon-card-${s.id}`);if(otherCard)otherCard.classList.remove('border-brand-500','glow-border-brand')}});const m=mapMarkers.find(marker=>marker.getLatLng().lat===selectedSalon.coords[0]&&marker.getLatLng().lng===selectedSalon.coords[1]);if(focusMap&&m){map.setView(selectedSalon.coords,14.5);m.openPopup()}if(expandedArea){const isHidden=expandedArea.classList.contains('hidden');if(isHidden){expandedArea.classList.remove('hidden');card.classList.add('border-brand-500','glow-border-brand');if(ratesArea){ratesArea.innerHTML=`<div class="col-span-2 text-center text-[10px] text-slate-500 py-1"><i class="fa-solid fa-spinner animate-spin mr-1"></i>Loading...</div>`;try{const res=await fetch(`/api/services/${salonId}`);const services=await res.json();ratesArea.innerHTML='';if(services.length===0){ratesArea.innerHTML=`<div class="col-span-2 text-center text-slate-500 py-1">No services</div>`}else{services.forEach(srv=>{const name=currentLang==='en'?srv.nameEn:srv.nameHi;const row=document.createElement('div');row.className="flex justify-between items-center py-0.5 border-b border-slate-900/50";row.innerHTML=`<span class="truncate pr-1">${name}</span><span class="font-bold text-emerald-400 flex-shrink-0">₹${srv.price||0}</span>`;ratesArea.appendChild(row)})}}catch(e){console.error(e);ratesArea.innerHTML=`<div class="col-span-2 text-center text-rose-400 py-1">Error</div>`}}card.scrollIntoView({behavior:'smooth',block:'nearest'})}else{expandedArea.classList.add('hidden');card.classList.remove('border-brand-500','glow-border-brand');selectedSalon=null;}}}
 
-async function triggerBooking(salonId){selectedSalon=salonsData.find(s=>s.id===salonId);selectedBarber=null;selectedServices=[];comboRewardAutoAdded=false;document.getElementById('detailsSalonName').innerText=selectedSalon.name;try{const res=await fetch(`/api/services/${salonId}`);salonServicesData=await res.json()}catch(e){console.error(e)}document.getElementById('detailsSalonImage').src=selectedSalon.image||'/images/default_salon.png';document.getElementById('detailAddressText').innerText=selectedSalon.address;document.getElementById('detailPhoneText').innerText=`+91 ${selectedSalon.mobile||'8888888888'}`;document.getElementById('detailCallLink').href=`tel:${selectedSalon.mobile||'8888888888'}`;document.getElementById('detailWhatsappLink').href=`https://wa.me/91${selectedSalon.mobile||'8888888888'}?text=Hello%20${encodeURIComponent(selectedSalon.name)}`;document.getElementById('detailDirectionsLink').href=`https://www.google.com/maps/dir/?api=1&destination=${selectedSalon.coords[0]},${selectedSalon.coords[1]}`;document.getElementById('detailsOfferText').innerText=selectedSalon.offer;const status=getSalonStatus(selectedSalon);const statusText=status==='closed'?(currentLang==='en'?'Closed today':'आज बंद है'):(currentLang==='en'?'Open now':'अभी खुला है');const statusBadge=document.getElementById('detailsStatusHeaderBadge');if(statusBadge){statusBadge.innerText=status==='closed'?(currentLang==='en'?'Closed':'बंद'):(status==='full'?(currentLang==='en'?'Full':'हाउसफुल'):(status==='busy'?(currentLang==='en'?'Busy':'व्यस्त'):(currentLang==='en'?'Open':'खुला')));statusBadge.className=status==='closed'?'text-rose-400 font-bold':(status==='full'?'text-amber-400 font-bold':'text-emerald-400 font-bold')}document.getElementById('detailStatusText').innerText=statusText;document.getElementById('detailStatusText').className=status==='closed'?'text-rose-400 font-bold':'text-emerald-400 font-bold';const reviews=historyData.filter(t=>t.salonId===selectedSalon.id&&t.feedback&&t.feedback.salonRating);let avgRating=4.8;if(reviews.length>0){const sum=reviews.reduce((acc,r)=>acc+r.feedback.salonRating,0);avgRating=sum/reviews.length}const reviewCount=reviews.length+3;document.getElementById('detailsSalonSubtitleHeader').innerHTML=`<span class="text-amber-400 font-bold"><i class="fa-solid fa-star text-[8px] mr-0.5"></i>${avgRating.toFixed(1)}</span><span>· Salon ·</span><span id="detailsStatusHeaderBadge" class="${status==='closed'?'text-rose-400':'text-emerald-400'} font-bold">${status==='closed'?(currentLang==='en'?'Closed':'बंद'):(currentLang==='en'?'Open':'खुला')}</span>`;updateSaveButtonUI();renderBarbersList();renderServicesGrid();checkBookingState();switchDetailTab('overview');renderReviewsTab(avgRating,reviewCount,reviews);renderPhotosTab();const banner=document.getElementById('detailsComboBanner');const comboTextEl=document.getElementById('detailsComboText');if(selectedSalon.comboActive&&selectedSalon.comboTriggerServiceIds&&selectedSalon.comboTriggerServiceIds.length>0&&selectedSalon.comboRewardServiceId){if(banner&&comboTextEl){const triggers=selectedSalon.comboTriggerServiceIds.map(tid=>{const srv=salonServicesData.find(s=>s.id===tid);return srv?(currentLang==='en'?srv.nameEn:srv.nameHi):tid}).join(' + ');const rewardSrv=salonServicesData.find(s=>s.id===selectedSalon.comboRewardServiceId);const reward=rewardSrv?(currentLang==='en'?rewardSrv.nameEn:rewardSrv.nameHi):selectedSalon.comboRewardServiceId;comboTextEl.innerText=currentLang==='en'?`Select ${triggers} to get a FREE ${reward}! 🎁`:`मुफ्त ${reward} पाने के लिए ${triggers} दोनों चुनें! 🎁`;banner.classList.remove('hidden')}}else{if(banner)banner.classList.add('hidden')}navigateTo('details')}
+async function triggerBooking(salonId){selectedSalon=salonsData.find(s=>s.id===salonId);selectedBarber=null;selectedServices=[];comboRewardAutoAdded=false;document.getElementById('detailsSalonName').innerText=selectedSalon.name;try{const res=await fetch(`/api/services/${salonId}`);salonServicesData=await res.json()}catch(e){console.error(e)}document.getElementById('detailsSalonImage').src=selectedSalon.image||'/images/default_salon.png';document.getElementById('detailAddressText').innerText=selectedSalon.address;document.getElementById('detailPhoneText').innerText=`+91 ${selectedSalon.mobile||'8888888888'}`;document.getElementById('detailCallLink').href=`tel:${selectedSalon.mobile||'8888888888'}`;document.getElementById('detailWhatsappLink').href=`https://wa.me/91${selectedSalon.mobile||'8888888888'}?text=Hello%20${encodeURIComponent(selectedSalon.name)}`;document.getElementById('detailDirectionsLink').href=`https://www.google.com/maps/dir/?api=1&destination=${selectedSalon.coords[0]},${selectedSalon.coords[1]}`;document.getElementById('detailsOfferText').innerText=selectedSalon.offer;const status=getSalonStatus(selectedSalon);const statusText=status==='closed'?(currentLang==='en'?'Closed today':'आज बंद है'):(currentLang==='en'?'Open now':'अभी खुला है');const statusBadge=document.getElementById('detailsStatusHeaderBadge');if(statusBadge){statusBadge.innerText=status==='closed'?(currentLang==='en'?'Closed':'बंद'):(status==='full'?(currentLang==='en'?'Full':'हाउसफुल'):(status==='busy'?(currentLang==='en'?'Busy':'व्यस्त'):(currentLang==='en'?'Open':'खुला')));statusBadge.className=status==='closed'?'text-rose-400 font-bold':(status==='full'?'text-amber-400 font-bold':'text-emerald-400 font-bold')}document.getElementById('detailStatusText').innerText=statusText;document.getElementById('detailStatusText').className=status==='closed'?'text-rose-400 font-bold':'text-emerald-400 font-bold';const reviews=historyData.filter(t=>t.salonId===selectedSalon.id&&t.feedback&&t.feedback.salonRating);let avgRating=0.0;if(reviews.length>0){const sum=reviews.reduce((acc,r)=>acc+r.feedback.salonRating,0);avgRating=sum/reviews.length}const reviewCount=reviews.length;document.getElementById('detailsSalonSubtitleHeader').innerHTML=`<span class="text-amber-400 font-bold"><i class="fa-solid fa-star text-[8px] mr-0.5"></i>${avgRating.toFixed(1)}</span><span>· Salon ·</span><span id="detailsStatusHeaderBadge" class="${status==='closed'?'text-rose-400':'text-emerald-400'} font-bold">${status==='closed'?(currentLang==='en'?'Closed':'बंद'):(currentLang==='en'?'Open':'खुला')}</span>`;updateSaveButtonUI();renderBarbersList();renderServicesGrid();checkBookingState();switchDetailTab('overview');renderReviewsTab(avgRating,reviewCount,reviews);renderPhotosTab();const banner=document.getElementById('detailsComboBanner');const comboTextEl=document.getElementById('detailsComboText');if(selectedSalon.comboActive&&selectedSalon.comboTriggerServiceIds&&selectedSalon.comboTriggerServiceIds.length>0&&selectedSalon.comboRewardServiceId){if(banner&&comboTextEl){const triggers=selectedSalon.comboTriggerServiceIds.map(tid=>{const srv=salonServicesData.find(s=>s.id===tid);return srv?(currentLang==='en'?srv.nameEn:srv.nameHi):tid}).join(' + ');const rewardSrv=salonServicesData.find(s=>s.id===selectedSalon.comboRewardServiceId);const reward=rewardSrv?(currentLang==='en'?rewardSrv.nameEn:rewardSrv.nameHi):selectedSalon.comboRewardServiceId;comboTextEl.innerText=currentLang==='en'?`Select ${triggers} to get a FREE ${reward}! 🎁`:`मुफ्त ${reward} पाने के लिए ${triggers} दोनों चुनें! 🎁`;banner.classList.remove('hidden')}}else{if(banner)banner.classList.add('hidden')}navigateTo('details')}
 
 function getSavedSalons(){
   try {
@@ -306,7 +306,7 @@ function renderReviewsTab(avgRating,reviewCount,reviews){
   if(numEl)numEl.innerText=avgRating.toFixed(1);
   if(starsEl)starsEl.innerHTML=getStarsHtml(avgRating);
   if(countEl)countEl.innerText=`${reviewCount} ${currentLang==='en'?'reviews':'समीक्षाएं'}`;
-  const counts={5:2,4:1,3:0,2:0,1:0};
+  const counts={5:0,4:0,3:0,2:0,1:0};
   reviews.forEach(r=>{
     const rVal=Math.round(r.feedback.salonRating);
     if(counts[rVal]!==undefined)counts[rVal]++;
@@ -322,12 +322,7 @@ function renderReviewsTab(avgRating,reviewCount,reviews){
   const listEl=document.getElementById('detailReviewsList');
   if(!listEl)return;
   listEl.innerHTML='';
-  const defaultReviews=[
-    {name:"Sunil Mehta",rating:5,comment:currentLang==='en'?"Very clean and professional. Online booking saved my time!":"बहुत साफ और पेशेवर। ऑनलाइन बुकिंग ने मेरा समय बचाया!"},
-    {name:"Amit Sharma",rating:5,comment:currentLang==='en'?"Superb service, Rohan barber is very skilled.":"शानदार सेवा, नाई रोहन बहुत कुशल हैं।"},
-    {name:"Priya Singh",rating:4,comment:currentLang==='en'?"Good ambiance and quick check-in.":"अच्छा माहौल और त्वरित चेक-इन।"}
-  ];
-  const allReviews=[...defaultReviews];
+  const allReviews=[];
   reviews.forEach(r=>{
     if(r.feedback&&r.feedback.comment){
       allReviews.unshift({
@@ -337,6 +332,10 @@ function renderReviewsTab(avgRating,reviewCount,reviews){
       });
     }
   });
+  if(allReviews.length===0){
+    listEl.innerHTML=`<p class="text-[10px] text-slate-500 italic text-center py-4">${t('noReviews')}</p>`;
+    return;
+  }
   allReviews.forEach(rev=>{
     const div=document.createElement('div');
     div.className="bg-slate-900 border border-slate-850 rounded-xl p-3 space-y-1 text-xs";
@@ -1287,12 +1286,12 @@ function renderFeaturedSalonsSlider() {
   slider.classList.remove('hidden');
   featured.forEach(s => {
     const reviews = historyData.filter(t => t.salonId === s.id && t.feedback && t.feedback.salonRating);
-    let avgRating = 4.8;
+    let avgRating = 0.0;
     if (reviews.length > 0) {
       const sum = reviews.reduce((acc, r) => acc + r.feedback.salonRating, 0);
       avgRating = sum / reviews.length;
     }
-    const reviewCount = reviews.length + 3;
+    const reviewCount = reviews.length;
     const slide = document.createElement('div');
     let borderClass = '', shadowClass = '', badgeClass = '', crownColor = '';
     if (s.adTier === 'gold') {
