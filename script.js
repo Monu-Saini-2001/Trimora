@@ -1058,15 +1058,20 @@ async function submitRegisterOwner(){
   let lat = 29.1492;
   let lng = 75.7217;
   try {
-    const geoRes = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}`);
+    const baseLat = (userLocation && userLocation[0]) ? userLocation[0] : 29.1492;
+    const baseLng = (userLocation && userLocation[1]) ? userLocation[1] : 75.7217;
+    const minLon = baseLng - 0.5;
+    const minLat = baseLat - 0.5;
+    const maxLon = baseLng + 0.5;
+    const maxLat = baseLat + 0.5;
+    const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(address)}&countrycodes=in&viewbox=${minLon},${minLat},${maxLon},${maxLat}&limit=3`;
+    const geoRes = await fetch(url);
     if (geoRes.ok) {
       const geoData = await geoRes.json();
       if (geoData && geoData.length > 0) {
         lat = parseFloat(geoData[0].lat);
         lng = parseFloat(geoData[0].lon);
       } else {
-        const baseLat = (userLocation && userLocation[0]) ? userLocation[0] : 29.1492;
-        const baseLng = (userLocation && userLocation[1]) ? userLocation[1] : 75.7217;
         lat = baseLat + (Math.random() - 0.5) * 0.02;
         lng = baseLng + (Math.random() - 0.5) * 0.02;
       }
