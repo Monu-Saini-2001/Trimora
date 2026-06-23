@@ -217,6 +217,20 @@ app.post('/api/bookings/:tokenNumber/cancel',async(req,res)=>{try{
     const gapId='gap_'+Date.now()+'_'+Math.floor(Math.random()*1000);
     const newGap=new QueueGap({id:gapId,salonId:booking.salonId,barberName:booking.barberName,duration:booking.servicesDuration,bookingTimeMs:booking.bookingTimeMs});
     await newGap.save();
+    const activeForBarber = await Booking.find({ salonId: booking.salonId, barberName: booking.barberName, status: 'active' }).sort({ bookingTimeMs: 1 });
+    if (activeForBarber.length > 0) {
+      const firstActive = activeForBarber[0];
+      await QueueGap.deleteMany({
+        salonId: booking.salonId,
+        barberName: booking.barberName,
+        bookingTimeMs: { $lt: firstActive.bookingTimeMs }
+      });
+    } else {
+      await QueueGap.deleteMany({
+        salonId: booking.salonId,
+        barberName: booking.barberName
+      });
+    }
     res.json({booking,gap:newGap});
   }else{res.status(404).json({error:'Booking not found'})}
 }catch(err){res.status(500).json({error:err.message})}});
@@ -259,15 +273,21 @@ const startServerCountdown = () => {
         const activeTokens = timeline.filter(t => t.tokenNumber !== undefined);
         if (activeTokens.length > 0) {
           const firstActive = activeTokens[0];
-          const elapsedMins = (Date.now() - (firstActive.bookingTimeMs || Date.now())) / (60 * 1000);
-          if (elapsedMins >= (firstActive.travelTime || 0)) {
+          await QueueGap.deleteMany({
+            salonId: firstActive.salonId,
+            barberName: firstActive.barberName,
+            bookingTimeMs: { $lt: firstActive.bookingTimeMs }
+          });
+          timeline = timeline.filter(item => item.tokenNumber !== undefined || item.bookingTimeMs >= firstActive.bookingTimeMs);
+        } else {
+          const parts = key.split('|');
+          if (parts.length === 2) {
             await QueueGap.deleteMany({
-              salonId: firstActive.salonId,
-              barberName: firstActive.barberName,
-              bookingTimeMs: { $lt: firstActive.bookingTimeMs }
+              salonId: parts[0],
+              barberName: parts[1]
             });
-            timeline = timeline.filter(item => item.tokenNumber !== undefined || item.bookingTimeMs >= firstActive.bookingTimeMs);
           }
+          timeline = [];
         }
         if (timeline.length > 0) {
           const head = timeline[0];

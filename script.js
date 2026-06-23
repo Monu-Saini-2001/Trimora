@@ -218,7 +218,7 @@ function updateTrackerBtnVisibility(){const trackerBtn=document.getElementById('
 
 function getStarsHtml(rating){let html='';const fullStars=Math.floor(rating);const halfStar=(rating%1)>=0.4;for(let i=1;i<=5;i++){if(i<=fullStars){html+='★'}else if(i===fullStars+1&&halfStar){html+='½'}else{html+='☆'}}return html}
 
-function getEstWaitTime(salon){if(salon.status==='closed')return 0;const activeBarbers=salon.barbers.filter(b=>!b.onLeave);if(activeBarbers.length===0)return 0;let totalWait=0;activeBarbers.forEach(barber=>{const timeline=getBarberTimeline(salon.id,barber.name);let barberWait=0;timeline.forEach((item,idx)=>{if(idx===0&&item.tokenNumber){const elapsed=(Date.now()-(item.bookingTimeMs||Date.now()))/(60*1000);const remTravel=Math.max(0,(item.travelTime||0)-elapsed);barberWait+=item.remainingWait+remTravel}else{barberWait+=item.tokenNumber?item.remainingWait:item.duration}});totalWait+=barberWait});return Math.round((totalWait/activeBarbers.length)/5)*5||15}
+function getEstWaitTime(salon){if(salon.status==='closed')return 0;const activeBarbers=salon.barbers.filter(b=>!b.onLeave);if(activeBarbers.length===0)return 0;let totalWait=0;activeBarbers.forEach(barber=>{const timeline=getBarberTimeline(salon.id,barber.name);const firstActiveIdx=timeline.findIndex(t=>t.tokenNumber!==undefined);const activeTimeline=firstActiveIdx!==-1?timeline.slice(firstActiveIdx):timeline;let barberWait=0;activeTimeline.forEach((item,idx)=>{if(idx===0&&item.tokenNumber){const elapsed=(Date.now()-(item.bookingTimeMs||Date.now()))/(60*1000);const remTravel=Math.max(0,(item.travelTime||0)-elapsed);barberWait+=item.remainingWait+remTravel}else{barberWait+=item.tokenNumber?item.remainingWait:item.duration}});totalWait+=barberWait});return Math.round((totalWait/activeBarbers.length)/5)*5||15}
 
 async function selectSalonFromList(salonId,focusMap=true){selectedSalon=salonsData.find(s=>s.id===salonId);selectedBarber=null;selectedServices=[];comboRewardAutoAdded=false;const card=document.getElementById(`salon-card-${salonId}`);const expandedArea=document.getElementById(`salon-expand-${salonId}`);const ratesArea=document.getElementById(`salon-expand-rates-${salonId}`);salonsData.forEach(s=>{if(s.id!==salonId){const otherExp=document.getElementById(`salon-expand-${s.id}`);if(otherExp)otherExp.classList.add('hidden');const otherCard=document.getElementById(`salon-card-${s.id}`);if(otherCard)otherCard.classList.remove('border-brand-500','glow-border-brand')}});const m=mapMarkers.find(marker=>marker.getLatLng().lat===selectedSalon.coords[0]&&marker.getLatLng().lng===selectedSalon.coords[1]);if(focusMap&&m){map.setView(selectedSalon.coords,14.5);m.openPopup()}if(expandedArea){const isHidden=expandedArea.classList.contains('hidden');if(isHidden){expandedArea.classList.remove('hidden');card.classList.add('border-brand-500','glow-border-brand');if(ratesArea){ratesArea.innerHTML=`<div class="col-span-2 text-center text-[10px] text-slate-500 py-1"><i class="fa-solid fa-spinner animate-spin mr-1"></i>Loading...</div>`;try{const res=await fetch(`/api/services/${salonId}`);const services=await res.json();ratesArea.innerHTML='';if(services.length===0){ratesArea.innerHTML=`<div class="col-span-2 text-center text-slate-500 py-1">No services</div>`}else{services.forEach(srv=>{const name=currentLang==='en'?srv.nameEn:srv.nameHi;const row=document.createElement('div');row.className="flex justify-between items-center py-0.5 border-b border-slate-900/50";row.innerHTML=`<span class="truncate pr-1">${name}</span><span class="font-bold text-emerald-400 flex-shrink-0">₹${srv.price||0}</span>`;ratesArea.appendChild(row)})}}catch(e){console.error(e);ratesArea.innerHTML=`<div class="col-span-2 text-center text-rose-400 py-1">Error</div>`}}card.scrollIntoView({behavior:'smooth',block:'nearest'})}else{expandedArea.classList.add('hidden');card.classList.remove('border-brand-500','glow-border-brand');selectedSalon=null;}}}
 
@@ -488,8 +488,10 @@ function startLocalTick() {
     barberKeys.forEach(key => {
       const [salonId, barberName] = key.split('|');
       const timeline = getBarberTimeline(salonId, barberName);
-      if (timeline.length > 0) {
-        let head = timeline[0];
+      const firstActiveIdx = timeline.findIndex(t => t.tokenNumber !== undefined);
+      const activeTimeline = firstActiveIdx !== -1 ? timeline.slice(firstActiveIdx) : timeline;
+      if (activeTimeline.length > 0) {
+        let head = activeTimeline[0];
         if (head.tokenNumber) {
           const elapsed = (Date.now() - (head.bookingTimeMs || Date.now())) / (60 * 1000);
           if (elapsed >= (head.travelTime || 0)) {
@@ -551,8 +553,9 @@ async function fetchLatestDataSilently() {
           }
         });
       }
+      historyData = newHistory;
       if (loggedInMobile) {
-        const userActiveTokens = newHistory.filter(t => t.mobile === loggedInMobile && t.status === 'active');
+        const userActiveTokens = historyData.filter(t => t.mobile === loggedInMobile && t.status === 'active');
         userActiveTokens.forEach(token => {
           const timeline = getBarberTimeline(token.salonId, token.barberName);
           const firstActiveIdx = timeline.findIndex(t => t.tokenNumber !== undefined);
@@ -587,7 +590,6 @@ async function fetchLatestDataSilently() {
           }
         });
       }
-      historyData = newHistory;
       checkUnratedCompletedBookings();
     }
     if (currentScreen === 'home') {
