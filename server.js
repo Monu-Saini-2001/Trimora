@@ -204,7 +204,8 @@ app.post('/api/bookings/:tokenNumber/simulate-adjust',async(req,res)=>{try{
     : { tokenNumber: parseInt(req.params.tokenNumber,10), status: 'active' };
   const booking=await Booking.findOne(query);
   if(!booking)return res.status(404).json({error:'Booking not found'});
-  booking.remainingWait=Math.max(0,booking.remainingWait+mins);
+  booking.servicesDuration = Math.max(0, booking.servicesDuration + mins);
+  booking.remainingWait = Math.max(0, booking.remainingWait + mins);
   await booking.save();
   res.json(booking);
 }catch(err){res.status(500).json({error:err.message})}});
