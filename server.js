@@ -22,7 +22,7 @@ const barberSchema=new mongoose.Schema({name:String,rating:Number,experience:Num
 const salonSchema=new mongoose.Schema({id:{type:String,unique:true},name:String,address:String,coords:[Number],status:String,offer:String,barbers:[barberSchema],mobile:String,email:String,image:String,comboActive:{type:Boolean,default:false},comboTriggerServiceIds:[String],comboRewardServiceId:String,adBannerUrl:{type:String,default:""},lastMilestoneClaimed:{type:Number,default:0},adExpiresAt:{type:Date,default:null},type:{type:String,default:'salon'}});
 const ownerSchema=new mongoose.Schema({salonId:String,salonName:String,email:{type:String,unique:true},mobile:{type:String,unique:true},password:String,ownerName:String});
 const serviceSchema=new mongoose.Schema({salonId:String,id:String,nameEn:String,nameHi:String,icon:String,times:{type:Map,of:Number},price:{type:Number,default:0}});
-const bookingSchema=new mongoose.Schema({tokenNumber:Number,remainingWait:Number,initialWait:Number,servicesDuration:Number,travelTime:Number,mobile:String,timestamp:String,bookingTimeMs:Number,dateString:String,salonId:String,salonName:String,barberName:String,servicesIds:[String],servicesList:[String],status:String,isEmergency:Boolean,price:Number,feedback:{salonRating:Number,barberRating:Number,comment:String}});
+const bookingSchema=new mongoose.Schema({tokenNumber:Number,remainingWait:Number,initialWait:Number,servicesDuration:Number,travelTime:Number,mobile:String,timestamp:String,bookingTimeMs:Number,dateString:String,salonId:String,salonName:String,barberName:String,servicesIds:[String],servicesList:[String],status:String,isEmergency:Boolean,price:Number,feedback:{salonRating:Number,barberRating:Number,comment:String},startedServing:{type:Boolean,default:false}});
 const queueGapSchema=new mongoose.Schema({id:{type:String,unique:true},salonId:String,barberName:String,duration:Number,bookingTimeMs:Number});
 const Salon=mongoose.model('Salon',salonSchema);
 const Owner=mongoose.model('Owner',ownerSchema);
@@ -298,6 +298,19 @@ const startServerCountdown = () => {
               ? (item.bookingTimeMs + (item.travelTime || 0) * 60 * 1000)
               : runningTimeMs;
             startTimeMs = Math.max(startTimeMs, item.bookingTimeMs + (item.travelTime || 0) * 60 * 1000);
+
+            if (i === 0 && !item.startedServing) {
+              if (startTimeMs < now - 5000) {
+                item.bookingTimeMs = now - (item.travelTime || 0) * 60 * 1000;
+                item.startedServing = true;
+                await Booking.updateOne({ _id: item._id }, { bookingTimeMs: item.bookingTimeMs, startedServing: true });
+                startTimeMs = now;
+              } else if (now >= startTimeMs) {
+                item.startedServing = true;
+                await Booking.updateOne({ _id: item._id }, { startedServing: true });
+              }
+            }
+
             const endTimeMs = startTimeMs + item.servicesDuration * 60 * 1000;
 
             if (now >= endTimeMs) {
