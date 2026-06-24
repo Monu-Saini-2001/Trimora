@@ -745,7 +745,13 @@
           </button>
           <h2 id="ownerHeaderTitle" class="font-outfit font-bold text-sm text-white" data-translate="ownerPanelTitle">Salon Owner Panel</h2>
         </div>
-        <button onclick="logoutOwner()" class="bg-rose-950/50 hover:bg-rose-900 border border-rose-900 text-rose-450 px-2.5 py-1.5 rounded-lg text-[10px] font-bold transition-all" data-translate="logoutBtn">Logout</button>
+        <div class="flex items-center space-x-2">
+          <button onclick="navigateTo('tracking')" class="bg-emerald-955/60 hover:bg-emerald-900 border border-emerald-800 text-emerald-400 px-2.5 py-1.5 rounded-lg text-[10px] font-bold flex items-center space-x-1.5 transition-all animate-pulse-slow">
+            <span class="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-ping"></span>
+            <span data-translate="activeTokenTitle">Live</span>
+          </button>
+          <button onclick="logoutOwner()" class="bg-rose-955/50 hover:bg-rose-900 border border-rose-900 text-rose-450 px-2.5 py-1.5 rounded-lg text-[10px] font-bold transition-all" data-translate="logoutBtn">Logout</button>
+        </div>
       </header>
       <div class="p-4 space-y-4 flex-grow pb-24">
         <div class="flex bg-slate-900 rounded-xl p-1 text-xs border border-slate-800 flex-shrink-0 overflow-x-auto no-scrollbar scroll-smooth whitespace-nowrap">
