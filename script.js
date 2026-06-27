@@ -2085,20 +2085,20 @@ function initTrackingMap(salonCoords, salonName) {
       }
     }
 
-    // Customer position (gold home marker)
+    // Customer position (indigo home marker)
     const customerIcon = L.divIcon({
       className: 'custom-div-icon',
-      html: `<div class="flex items-center justify-center w-7 h-7 rounded-full shadow-lg border-2 border-slate-900 p-0.5" style="background-color:#c99e32;"><i class="fa-solid fa-house-user text-white text-xs"></i></div>`,
+      html: `<div class="flex items-center justify-center w-7 h-7 rounded-full shadow-lg border-2 border-indigo-500 p-0.5" style="background-color:#0f172a;"><i class="fa-solid fa-house-user text-indigo-400 text-xs"></i></div>`,
       iconSize: [28, 28],
       iconAnchor: [14, 14]
     });
     trackingUserMarker = L.marker(userLocation, { icon: customerIcon }).addTo(trackingMapInstance)
       .bindPopup(`<div class="p-1 text-slate-100 text-xs font-semibold">You / आप</div>`);
 
-    // Salon position (emerald salon logo marker)
+    // Salon position (gold salon logo marker)
     const salonIcon = L.divIcon({
       className: 'custom-div-icon',
-      html: `<div class="flex items-center justify-center w-7 h-7 rounded-full shadow-lg border-2 border-slate-900 p-0.5" style="background-color:#10b981;"><img src="images/logo_symbol_trans.png?v=1.3" class="w-full h-full object-contain"></div>`,
+      html: `<div class="flex items-center justify-center w-7 h-7 rounded-full shadow-lg border-2 border-amber-500 p-0.5" style="background-color:#0f172a;"><img src="images/logo_symbol_trans.png?v=1.3" class="w-full h-full object-contain"></div>`,
       iconSize: [28, 28],
       iconAnchor: [14, 14]
     });
