@@ -6,6 +6,15 @@ translations.hi.pendingApprovalsTitle = "पंजीकृत सैलून �
 translations.en.comboSameServiceError = "The free reward service cannot be one of the selected trigger services.";
 translations.hi.comboSameServiceError = "मुफ्त सेवा को चुनी गई ट्रिगर सेवाओं में शामिल नहीं किया जा सकता।";
 window.onerror = function (message, source, lineno, colno, error) {
+  // Ignore generic cross-origin script errors (browser extensions, in-app browser injections, etc.)
+  if (message === 'Script error.' || lineno === 0 || !source) {
+    return false;
+  }
+  // Only show the red popup UI on localhost to prevent scaring live users
+  if (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1') {
+    console.error("Browser JS Error:", message, "at", source, ":", lineno);
+    return false;
+  }
   const errDiv = document.createElement('div');
   errDiv.style.cssText = "position:fixed;top:10px;left:10px;right:10px;background:rgba(239,68,68,0.95);color:white;padding:15px;z-index:99999;font-family:monospace;font-size:12px;border-radius:10px;border:2px solid red;white-space:pre-wrap;max-height:80vh;overflow-y:auto;";
   errDiv.innerHTML = `<h3>🚨 Browser JavaScript Error:</h3>` +
