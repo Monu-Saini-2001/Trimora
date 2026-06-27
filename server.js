@@ -2,6 +2,50 @@ const express=require('express');
 const mongoose=require('mongoose');
 const cors=require('cors');
 require('dotenv').config();
+const nodemailer = require('nodemailer');
+
+async function sendOtpEmail(toEmail, subject, otp) {
+  if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
+    console.log(`[SMTP Not Configured] OTP for ${toEmail}: ${otp}`);
+    return false;
+  }
+  try {
+    const transporter = nodemailer.createTransport({
+      host: process.env.EMAIL_HOST || 'smtp.gmail.com',
+      port: parseInt(process.env.EMAIL_PORT || '465', 10),
+      secure: (process.env.EMAIL_PORT !== '587'),
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS
+      }
+    });
+    const mailOptions = {
+      from: `"LUZO Support" <${process.env.EMAIL_USER}>`,
+      to: toEmail,
+      subject: subject,
+      text: `Your LUZO verification OTP is: ${otp}. It is valid for 5 minutes.`,
+      html: `
+        <div style="font-family: Arial, sans-serif; padding: 20px; max-width: 600px; border: 1px solid #ddd; border-radius: 8px;">
+          <h2 style="color: #c99e32; text-align: center;">LUZO Verification Code</h2>
+          <p>Hello,</p>
+          <p>Your one-time password (OTP) to complete your request on LUZO is:</p>
+          <div style="font-size: 24px; font-weight: bold; text-align: center; padding: 15px; background-color: #f9f9f9; border-radius: 6px; letter-spacing: 4px; margin: 20px 0; color: #333;">
+            ${otp}
+          </div>
+          <p>This code is valid for 5 minutes. Please do not share this OTP with anyone.</p>
+          <hr style="border: none; border-top: 1px solid #eee; margin-top: 30px;" />
+          <p style="font-size: 11px; color: #888; text-align: center;">This is an automated email from LUZO Salon App.</p>
+        </div>
+      `
+    };
+    await transporter.sendMail(mailOptions);
+    console.log(`[SMTP Sent] OTP successfully sent to ${toEmail}`);
+    return true;
+  } catch (err) {
+    console.error("Error sending SMTP email:", err);
+    return false;
+  }
+}
 const app=express();
 const PORT=process.env.PORT||2000;
 app.use(cors());
@@ -159,7 +203,7 @@ const seedDB=async()=>{
     console.error(err);
   }
 };
-seedDB();
+// seedDB();
 const checkSalonAdMilestone=async(salonId)=>{try{const salon=await Salon.findOne({id:salonId});if(!salon)return;const completedCount=await Booking.countDocuments({salonId,status:'completed'});const nextMilestone=(salon.lastMilestoneClaimed+1)*100;if(completedCount>=nextMilestone){const milestonesCrossed=Math.floor(completedCount/100);const newMilestone=milestonesCrossed*100;if(newMilestone>salon.lastMilestoneClaimed){const standardAdDurationMs=7*24*60*60*1000;const additionalAdTime=((newMilestone-salon.lastMilestoneClaimed)/100)*standardAdDurationMs;let newExpiresAt=salon.adExpiresAt&&salon.adExpiresAt>Date.now()?new Date(salon.adExpiresAt.getTime()+additionalAdTime):new Date(Date.now()+additionalAdTime);salon.adExpiresAt=newExpiresAt;salon.lastMilestoneClaimed=newMilestone;await salon.save();console.log(`[AD PROMOTION UNLOCKED] Salon: ${salon.name}, Milestone: ${newMilestone}, Expires: ${newExpiresAt}`)}}}catch(err){console.error("Error checking milestone:",err)}};
 const enrichSalonWithAdInfo=async(salon)=>{if(!salon)return null;const s=salon.toObject?salon.toObject():JSON.parse(JSON.stringify(salon));s.completedCount=await Booking.countDocuments({salonId:s.id,status:'completed'});const sevenDaysAgo=Date.now()-7*24*60*60*1000;s.weeklyCompletedCount=await Booking.countDocuments({salonId:s.id,status:'completed',bookingTimeMs:{$gte:sevenDaysAgo}});if(s.weeklyCompletedCount>=100){s.adTier='gold'}else if(s.weeklyCompletedCount>=90){s.adTier='silver'}else if(s.weeklyCompletedCount>=80){s.adTier='bronze'}else{s.adTier=null}return s};
 app.get('/api/salons',async(req,res)=>{try{const salons=await Salon.find();const enrichedSalons=[];for(const s of salons){enrichedSalons.push(await enrichSalonWithAdInfo(s))}res.json(enrichedSalons)}catch(err){res.status(500).json({error:err.message})}});
@@ -170,7 +214,7 @@ app.delete('/api/salons/barbers',async(req,res)=>{try{const{salonId,barberName}=
 app.get('/api/services/:salonId',async(req,res)=>{try{const services=await Service.find({salonId:req.params.salonId});res.json(services)}catch(err){res.status(500).json({error:err.message})}});
 app.post('/api/salons/services',async(req,res)=>{try{const{salonId,id,nameEn,nameHi,icon,times,price}=req.body;const exists=await Service.findOne({salonId,id});if(exists)return res.status(400).json({error:'Service already exists'});const newSrv=new Service({salonId,id,nameEn,nameHi,icon,times,price});await newSrv.save();res.json(newSrv)}catch(err){res.status(500).json({error:err.message})}});
 app.delete('/api/salons/services',async(req,res)=>{try{const{salonId,srvId}=req.body;await Service.deleteOne({salonId,id:srvId});res.json({success:true})}catch(err){res.status(500).json({error:err.message})}});
-app.post('/api/owners/register',async(req,res)=>{try{const{salonId,salonName,mobile,email,password,ownerName,address,coords,image,type}=req.body;const exists=await Owner.findOne({$or:[{mobile},{email}]});if(exists)return res.status(400).json({error:'Owner already registered with this mobile or email'});const tempId='temp_'+Date.now();const otp=Math.floor(100000+Math.random()*900000).toString();const tempOwner=new TempOwner({tempId,salonId,salonName,email,mobile,password,ownerName,address,coords,image,otp,type:type||'salon'});await tempOwner.save();res.json({success:true,tempId,otp})}catch(err){res.status(500).json({error:err.message})}});
+app.post('/api/owners/register',async(req,res)=>{try{const{salonId,salonName,mobile,email,password,ownerName,address,coords,image,type}=req.body;const exists=await Owner.findOne({$or:[{mobile},{email}]});if(exists)return res.status(400).json({error:'Owner already registered with this mobile or email'});const tempId='temp_'+Date.now();const otp=Math.floor(100000+Math.random()*900000).toString();const tempOwner=new TempOwner({tempId,salonId,salonName,email,mobile,password,ownerName,address,coords,image,otp,type:type||'salon'});await tempOwner.save();const sent=await sendOtpEmail(email,"LUZO Owner Verification Code",otp);if(sent){res.json({success:true,tempId})}else{res.json({success:true,tempId,otp})}}catch(err){res.status(500).json({error:err.message})}});
 app.post('/api/owners/verify-otp',async(req,res)=>{try{const{tempId,otp}=req.body;const tempOwner=await TempOwner.findOne({tempId});if(!tempOwner)return res.status(400).json({error:'OTP session expired or invalid. Please register again.'});if(tempOwner.otp!==otp)return res.status(400).json({error:'Incorrect OTP. Please check the WhatsApp alert and try again.'});const newOwner=new Owner({salonId:tempOwner.salonId,salonName:tempOwner.salonName,mobile:tempOwner.mobile,email:tempOwner.email,password:tempOwner.password,ownerName:tempOwner.ownerName});await newOwner.save();const newSalon=new Salon({id:tempOwner.salonId,name:tempOwner.salonName,address:tempOwner.address,coords:tempOwner.coords,status:'free',offer:'Flat 10% off on first visit!',barbers:[],mobile:tempOwner.mobile,email:tempOwner.email,image:tempOwner.image||'/images/default_salon.png',type:tempOwner.type||'salon'});await newSalon.save();await TempOwner.deleteOne({tempId});res.json({success:true})}catch(err){res.status(500).json({error:err.message})}});
 app.post('/api/salons/:salonId/approve',async(req,res)=>{try{const salon=await Salon.findOneAndUpdate({id:req.params.salonId},{status:'free'},{new:true});if(salon){const enriched=await enrichSalonWithAdInfo(salon);res.json({success:true,salon:enriched})}else{res.status(404).json({error:'Salon not found'})}}catch(err){res.status(500).json({error:err.message})}});
 app.post('/api/salons/:salonId/reject',async(req,res)=>{try{const salon=await Salon.findOne({id:req.params.salonId});if(!salon)return res.status(404).json({error:'Salon not found'});await Salon.deleteOne({id:req.params.salonId});await Owner.deleteOne({salonId:req.params.salonId});res.json({success:true})}catch(err){res.status(500).json({error:err.message})}});
@@ -178,7 +222,7 @@ app.post('/api/owners/login',async(req,res)=>{try{const{identity,password}=req.b
 app.get('/api/owners',async(req,res)=>{try{const owners=await Owner.find();res.json(owners)}catch(err){res.status(500).json({error:err.message})}});
 app.post('/api/customers/register',async(req,res)=>{try{const{name,mobile,email,password}=req.body;const exists=await Customer.findOne({$or:[{mobile},{email}]});if(exists)return res.status(400).json({error:'Customer already registered with this mobile or email'});const newCustomer=new Customer({name,mobile,email,password});await newCustomer.save();res.json({success:true})}catch(err){res.status(500).json({error:err.message})}});
 app.post('/api/customers/login',async(req,res)=>{try{const{identity,password}=req.body;const customer=await Customer.findOne({$or:[{mobile:identity},{email:new RegExp('^'+identity+'$','i')}],password});if(customer){res.json({success:true,customer:{name:customer.name,mobile:customer.mobile,email:customer.email}})}else{res.status(401).json({error:'Invalid credentials'})}}catch(err){res.status(500).json({error:err.message})}});
-app.post('/api/customers/forgot-password',async(req,res)=>{try{const{mobile}=req.body;const customer=await Customer.findOne({mobile});if(!customer)return res.status(404).json({error:'Is mobile number se koi customer registered nahi hai.'});const otp=Math.floor(100000+Math.random()*900000).toString();customer.resetOtp=otp;customer.resetOtpExpires=new Date(Date.now()+5*60*1000);await customer.save();res.json({success:true,otp})}catch(err){res.status(500).json({error:err.message})}});
+app.post('/api/customers/forgot-password',async(req,res)=>{try{const{mobile}=req.body;const customer=await Customer.findOne({mobile});if(!customer)return res.status(404).json({error:'Is mobile number se koi customer registered nahi hai.'});const otp=Math.floor(100000+Math.random()*900000).toString();customer.resetOtp=otp;customer.resetOtpExpires=new Date(Date.now()+5*60*1000);await customer.save();const sent=await sendOtpEmail(customer.email,"LUZO Password Reset Verification Code",otp);if(sent){res.json({success:true})}else{res.json({success:true,otp})}}catch(err){res.status(500).json({error:err.message})}});
 app.post('/api/customers/reset-password',async(req,res)=>{try{const{mobile,otp,newPassword}=req.body;const customer=await Customer.findOne({mobile});if(!customer)return res.status(404).json({error:'Customer not found'});if(!newPassword||newPassword.length<6)return res.status(400).json({error:'Password kam se kam 6 characters ka hona chahiye.'});if(!customer.resetOtp||customer.resetOtp!==otp||!customer.resetOtpExpires||customer.resetOtpExpires<Date.now()){return res.status(400).json({error:'Incorrect ya expired OTP. Kripya check karein aur fir se try karein.'})}customer.password=newPassword;customer.resetOtp=undefined;customer.resetOtpExpires=undefined;await customer.save();res.json({success:true})}catch(err){res.status(500).json({error:err.message})}});
 app.get('/api/customers',async(req,res)=>{try{const customers=await Customer.find({},{password:0});res.json(customers)}catch(err){res.status(500).json({error:err.message})}});
 app.get('/api/bookings/active',async(req,res)=>{try{const active=await Booking.find({status:'active'});res.json(active)}catch(err){res.status(500).json({error:err.message})}});

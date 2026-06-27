@@ -1108,6 +1108,34 @@ function clearRegPhoto() {
   if (previewContainer) previewContainer.classList.add('hidden');
 }
 
+function triggerOtpNotification(otp,mobile,email){
+  playSound('alert');
+  const last4=mobile.slice(-4);
+  let text, alertMsg, hintText;
+  if (otp) {
+    text = currentLang==='en'?`💬 LUZO Alert: Your verification OTP is ${otp}. Sent to Mobile (******${last4}) & Email (${email}).`:`💬 LUZO अलर्ट: आपका सत्यापन ओटीपी ${otp} है। मोबाइल (******${last4}) और ईमेल (${email}) पर भेजा गया है।`;
+    alertMsg = currentLang === 'en' ? `Your LUZO verification OTP is: ${otp}` : `आपका LUZO सत्यापन ओटीपी है: ${otp}`;
+    hintText = currentLang === 'en' ? `(For testing, OTP is: ${otp})` : `(परीक्षण के लिए, ओटीपी: ${otp})`;
+  } else {
+    text = currentLang==='en'?`💬 LUZO Alert: Verification OTP sent to your email (${email}).`:`💬 LUZO अलर्ट: सत्यापन ओटीपी आपके ईमेल (${email}) पर भेज दिया गया है।`;
+    alertMsg = currentLang === 'en' ? `A verification OTP has been sent to your email address (${email}).` : `एक सत्यापन ओटीपी आपके ईमेल पते (${email}) पर भेजा गया है।`;
+    hintText = currentLang === 'en' ? `Please enter the OTP sent to your email.` : `कृपया अपने ईमेल पर प्राप्त ओटीपी दर्ज करें।`;
+  }
+  document.getElementById('whatsappMsgText').innerText=text;
+  document.getElementById('notificationTime').innerText=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+  const notification=document.getElementById('whatsappNotification');
+  if(notification){
+    notification.classList.remove('-translate-y-full');
+    setTimeout(()=>closeWhatsAppNotification(),10000);
+  }
+  
+  const hintEl = document.getElementById('regOtpHint');
+  if (hintEl) {
+    hintEl.innerText = hintText;
+  }
+  alert(alertMsg);
+}
+
 function toggleLoginRegisterView(isRegister){const loginView=document.getElementById('owner-login-view');const regView=document.getElementById('owner-register-view');const errMsg=document.getElementById('loginErrorMsg');const regErrMsg=document.getElementById('registerErrorMsg');if(errMsg)errMsg.classList.add('hidden');if(regErrMsg)regErrMsg.classList.add('hidden');if(isRegister){loginView.classList.add('hidden');regView.classList.remove('hidden');backToRegisterFields()}else{loginView.classList.remove('hidden');regView.classList.add('hidden')}}
 async function submitRegisterOwner(){
   const ownerName=document.getElementById('regOwnerName').value.trim();
@@ -1922,9 +1950,20 @@ function triggerForgotOtpNotification(otp, mobile) {
     try { playSound('alert'); } catch(e) {}
   }
   const last4 = mobile.slice(-4);
-  const text = currentLang === 'en' 
-    ? `🔑 LUZO Reset: Your password reset OTP is ${otp}. Valid for 5 mins.` 
-    : `🔑 LUZO रीसेट: आपका पासवर्ड रीसेट ओटीपी ${otp} है। यह 5 मिनट के लिए वैध है।`;
+  let text, alertMsg, hintText;
+  if (otp) {
+    text = currentLang === 'en' 
+      ? `🔑 LUZO Reset: Your password reset OTP is ${otp}. Valid for 5 mins.` 
+      : `🔑 LUZO रीसेट: आपका पासवर्ड रीसेट ओटीपी ${otp} है। यह 5 मिनट के लिए वैध है।`;
+    alertMsg = currentLang === 'en' ? `Your password reset OTP is: ${otp}` : `आपका पासवर्ड रीसेट ओटीपी है: ${otp}`;
+    hintText = currentLang === 'en' ? `(For testing, OTP is: ${otp})` : `(परीक्षण के लिए, ओटीपी: ${otp})`;
+  } else {
+    text = currentLang === 'en' 
+      ? `🔑 LUZO Reset: A password reset OTP has been sent to your registered email.` 
+      : `🔑 LUZO रीसेट: पासवर्ड रीसेट ओटीपी आपके पंजीकृत ईमेल पर भेज दिया गया है।`;
+    alertMsg = currentLang === 'en' ? `A password reset OTP has been sent to your registered email address.` : `एक पासवर्ड रीसेट ओटीपी आपके पंजीकृत ईमेल पते पर भेजा गया है।`;
+    hintText = currentLang === 'en' ? `Please enter the OTP sent to your email.` : `कृपया अपने ईमेल पर प्राप्त ओटीपी दर्ज करें।`;
+  }
   
   const msgTextEl = document.getElementById('whatsappMsgText');
   const timeEl = document.getElementById('notificationTime');
@@ -1943,12 +1982,11 @@ function triggerForgotOtpNotification(otp, mobile) {
     }, 10000);
   }
 
-  // Set the on-screen helper hint and trigger browser alert
   const hintEl = document.getElementById('customerForgotOtpHint');
   if (hintEl) {
-    hintEl.innerText = currentLang === 'en' ? `(For testing, OTP is: ${otp})` : `(परीक्षण के लिए, ओटीपी: ${otp})`;
+    hintEl.innerText = hintText;
   }
-  alert(currentLang === 'en' ? `Your password reset OTP is: ${otp}` : `आपका पासवर्ड रीसेट ओटीपी है: ${otp}`);
+  alert(alertMsg);
 }
 
 async function submitPasswordReset() {
