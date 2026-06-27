@@ -1,4 +1,4 @@
-const translations={en:{subtitle:"Live Salon Token System",historyBtn:"History",selectSalon:"Select a Salon",selectSalonPlaceholder:"Please select a salon from the map above to view details, barbers, and booking options.",barbersHeader:"Choose Your Barber",servicesHeader:"Select Services",bookTokenBtn:"Book Your Token",activeTokenTitle:"Live",tokenNo:"Token #",estWait:"Remaining Wait Time",mins:"mins",travelTime:"Travel Time",cancelToken:"Cancel Token",barberControl:"Barber Control (Demo)",nextCustomer:"Next Token",add5mins:"+5 Min",sub5mins:"-5 Min",whatsappTitle:"ZeroWait Q Alert",whatsappMsg:"Time to leave! Your remaining wait time is {wait} mins, which matches your travel time of {travel} mins.",bookingModalTitle:"Confirm Booking",mobileLabel:"Mobile Number (10 digits)",travelLabel:"Travel Time to Salon (mins)",confirmBtn:"Confirm & Book",cancelBtn:"Close",historyModalTitle:"📜 Booking History",clearHistoryBtn:"Clear History",historyEmpty:"No booking history found.",statusActive:"Active",statusCompleted:"Completed",statusCancelled:"Cancelled",ownerPanelTitle:"Salon Owner Panel",editOfferLabel:"Edit Active Offer Text",saveOfferBtn:"Save Offer",footerText:"🔒 Only you see your token history on this device.",pendingTokens:"Pending Tokens",salonStatus:"Est. Wait/Token",currentOffer:"Current Offer",cancelConfirm:"Are you sure you want to cancel this token?",cancelSuccess:"Your token #{token} has been cancelled.",completedSuccess:"Token #{token} completed! Thank you for visiting.",invalidMobile:"Please enter a valid 10-digit mobile number.",invalidTravel:"Please enter a valid travel time (1-180 mins).",durationLabel:"Duration",freeStatus:"Free",busyStatus:"Busy",fullStatus:"Full",searchPlaceholder:"Search salons by name or area...",searchNoResults:"No salons found matching '{query}'",ownerAnalytics:"Analytics",ownerServices:"Services Control",ownerOffers:"Offers Control",ownerBarbers:"Barbers Control",addService:"Add New Service",serviceNameEn:"Name (English)",serviceNameHi:"Name (Hindi)",selectIcon:"Select Icon",barbersDurations:"Barber Service Durations",mostActive:"Most Active Barber",ownerLoginTitle:"Owner Authentication",pinLabel:"Enter Password",ownerEmailLabel:"Owner Email",regPasswordLabel:"Set Password (min 6 characters)",loginBtn:"Authenticate",logoutBtn:"Logout Owner",invalidPin:"Invalid credentials. Please try again.",loginSuccess:"Successfully logged in!",logoutSuccess:"Logged out successfully.",selectedServicesSummary:"Selected ({count}): {list} | {duration} mins",viewDetails:"View Details",ownerPanelLink:"Owner",feedbackTitle:"Give Feedback",feedbackBarberLabel:"Rate Barber ({name})",feedbackSalonLabel:"Rate Salon",commentLabel:"Comments / Suggestions",submitFeedback:"Submit Feedback",recentReviews:"Customer Reviews & Ratings",avgSalonRating:"Avg Salon Rating",avgBarberRating:"Avg Barber Rating",giveFeedbackBtn:"Give Feedback",noReviews:"No reviews yet.",feedbackSuccess:"Thank you for your feedback!",emergencyBookingLabel:"Book as Emergency / VIP (+₹100)",emergencyBookingDesc:"Grabs cancellation slot or top priority",shiftQueue:"Shift Queue (Fill Gap)",otpLabel:"Enter OTP sent to your Mobile & Email",verifyOtpBtn:"Verify & Complete Registration",serviceRates:"Service Rates",loginIdentityLabel:"Salon Name or Mobile",ownerMobileLabel:"Owner Mobile (10 digits)",ownerNameLabel:"Owner Name",ownerRegisterTitle:"Register Salon & Owner",registerBtn:"Register Salon",salonAddressLabel:"Salon Address",salonNameLabel:"Salon Name",salonsListTitle:"Nearby Salons",featured:"Featured",activeGold:"Active - Gold Tier 👑",activeSilver:"Active - Silver Tier 🥈",activeBronze:"Active - Bronze Tier 🥉",inactiveAd:"Inactive (<80 bookings this week)",fastPassStatus:"Fast Pass 🟢",standardStatus:"Standard 🟡",highDemandStatus:"High Demand 🟠"},hi:{subtitle:"लाइव सैलून टोकन सिस्टम",historyBtn:"इतिहास",selectSalon:"सैलून चुनें",selectSalonPlaceholder:"विवरण, नाई और बुकिंग विकल्प देखने के लिए कृपया ऊपर दिए गए मानचित्र से एक सैलून चुनें।",barbersHeader:"अपना नाई चुनें",servicesHeader:"सेवाएं चुनें",bookTokenBtn:"टोकन बुक करें",activeTokenTitle:"लाइव",tokenNo:"टोकन संख्या",estWait:"शेष प्रतीक्षा समय",mins:"मिनट",travelTime:"यात्रा समय",cancelToken:"टोकन रद्द करें",barberControl:"नाई नियंत्रण (डेमो)",nextCustomer:"अगला टोकन",add5mins:"+5 मिनट",sub5mins:"-5 मिनट",whatsappTitle:"जीरोवेट क्यू अलर्ट",whatsappMsg:"निकलने का समय हो गया! आपकी शेष प्रतीक्षा {wait} मिनट है, जो आपके {travel} मिनट के यात्रा समय के बराबर है।",bookingModalTitle:"टोकन की पुष्टि करें",mobileLabel:"मोबाइल नंबर (10 अंक)",travelLabel:"सैलून तक पहुंचने का समय (मिनट)",confirmBtn:"पुष्टि करें और बुक करें",cancelBtn:"बंद करें",historyModalTitle:"📜 बुकिंग इतिहास",clearHistoryBtn:"इतिहास साफ करें",historyEmpty:"कोई बुकिंग इतिहास नहीं मिला।",statusActive:"सक्रिय",statusCompleted:"पूर्ण",statusCancelled:"रद्द",ownerPanelTitle:"सैलून मालिक पैनल",editOfferLabel:"सक्रिय प्रस्ताव पाठ संपादित करें",saveOfferBtn:"ऑफर सहेजें",footerText:"🔒 केवल आप इस डिवाइस पर अपना टोकन इतिहास देखते हैं।",pendingTokens:"लंबित टोकन",salonStatus:"अनुमानित प्रतीक्षा समय",currentOffer:"सक्रिय ऑफर",cancelConfirm:"क्या आप वाकई इस टोकन को रद्द करना चाहते हैं?",cancelSuccess:"आपका टोकन #{token} रद्द कर दिया गया है।",completedSuccess:"टोकन #{token} पूरा हुआ! आने के लिए धन्यवाद।",invalidMobile:"कृपया एक वैध 10-अंकीय मोबाइल नंबर दर्ज करें।",invalidTravel:"कृपया एक वैध यात्रा समय दर्ज करें (1-180 मिनट)।",durationLabel:"अवधि",freeStatus:"खाली",busyStatus:"व्यस्त",fullStatus:"हाउसफुल",searchPlaceholder:"नाम या क्षेत्र से सैलून खोजें...",searchNoResults:"'{query}' से मेल खाता कोई सैलून नहीं मिला",ownerAnalytics:"विश्लेषण",ownerServices:"सेवाएं नियंत्रण",ownerOffers:"ऑफर नियंत्रण",ownerBarbers:"नाई नियंत्रण",addService:"नई सेवा जोड़ें",serviceNameEn:"नाम (अंग्रेजी)",serviceNameHi:"नाम (हिंदी)",selectIcon:"आइकन चुनें",barbersDurations:"नाई सेवा समय",mostActive:"सबसे सक्रिय नाई",ownerLoginTitle:"मालिक प्रमाणीकरण",pinLabel:"पासवर्ड दर्ज करें",ownerEmailLabel:"मालिक का ईमेल",regPasswordLabel:"पासवर्ड सेट करें (न्यूनतम 6 अक्षर)",loginBtn:"प्रमाणित करें",logoutBtn:"लॉगआउट मालिक",invalidPin:"अमान्य पासवर्ड। कृपया पुनः प्रयास करें।",loginSuccess:"सफलतापूर्वक लॉगिन किया गया!",logoutSuccess:"सफलतापूर्वक लॉगआउट किया गया।",selectedServicesSummary:"चयनित ({count}): {list} | {duration} मिनट",viewDetails:"विवरण देखें",ownerPanelLink:"मालिक",feedbackTitle:"फीडबैक दें",feedbackBarberLabel:"नाई ({name}) को rate करें",feedbackSalonLabel:"सैलून को रेट करें",commentLabel:"टिप्पणी / सुझाव",submitFeedback:"फीडबैक भेजें",recentReviews:"ग्राहक समीक्षा और रेटिंग",avgSalonRating:"औसत सैलून रेटिंग",avgBarberRating:"औसत नाई रेटिंग",giveFeedbackBtn:"फीडबैक दें",noReviews:"अभी कोई समीक्षा नहीं है।",feedbackSuccess:"आपकी प्रतिक्रिया के लिए धन्यवाद!",emergencyBookingLabel:"इमरजेंसी / वीआईपी बुक करें (+₹100)",emergencyBookingDesc:"कैंसलेशन स्लॉट या सर्वोच्च प्राथमिकता प्राप्त करें",shiftQueue:"कतार खिसकाएं (गैप भरें)",otpLabel:"मोबाइल और ईमेल पर भेजा गया ओटीपी दर्ज करें",verifyOtpBtn:"सत्यापित करें और पंजीकरण पूरा करें",serviceRates:"सेवाओं की दरें",loginIdentityLabel:"सैलून का नाम या मोबाइल",ownerMobileLabel:"मालिक का मोबाइल (10 अंक)",ownerNameLabel:"मालिक का नाम",ownerRegisterTitle:"सैलून और मालिक का पंजीकरण",registerBtn:"सैलून पंजीकृत करें",salonAddressLabel:"सैलून का पता",salonNameLabel:"सैलून का नाम",salonsListTitle:"आस-पास के सैलून",featured:"प्रायोजित",activeGold:"सक्रिय - गोल्ड टियर 👑",activeSilver:"सक्रिय - सिल्वर टियर 🥈",activeBronze:"सक्रिय - ब्रॉन्ज टियर 🥉",inactiveAd:"निष्क्रिय (इस सप्ताह <80 बुकिंग)",fastPassStatus:"तुरंत सेवा 🟢",standardStatus:"सामान्य कतार 🟡",highDemandStatus:"उच्च मांग 🟠"}};
+const translations={en:{subtitle:"Live Salon Token System",historyBtn:"History",selectSalon:"Select a Salon",selectSalonPlaceholder:"Please select a salon from the map above to view details, barbers, and booking options.",barbersHeader:"Choose Your Barber",servicesHeader:"Select Services",bookTokenBtn:"Book Your Token",activeTokenTitle:"Live",tokenNo:"Token #",estWait:"Remaining Wait Time",mins:"mins",travelTime:"Travel Time",cancelToken:"Cancel Token",barberControl:"Barber Control (Demo)",nextCustomer:"Next Token",add5mins:"+5 Min",sub5mins:"-5 Min",whatsappTitle:"LUZO Alert",whatsappMsg:"Time to leave! Your remaining wait time is {wait} mins, which matches your travel time of {travel} mins.",bookingModalTitle:"Confirm Booking",mobileLabel:"Mobile Number (10 digits)",travelLabel:"Travel Time to Salon (mins)",confirmBtn:"Confirm & Book",cancelBtn:"Close",historyModalTitle:"📜 Booking History",clearHistoryBtn:"Clear History",historyEmpty:"No booking history found.",statusActive:"Active",statusCompleted:"Completed",statusCancelled:"Cancelled",ownerPanelTitle:"Salon Owner Panel",editOfferLabel:"Edit Active Offer Text",saveOfferBtn:"Save Offer",footerText:"🔒 Only you see your token history on this device.",pendingTokens:"Pending Tokens",salonStatus:"Est. Wait/Token",currentOffer:"Current Offer",cancelConfirm:"Are you sure you want to cancel this token?",cancelSuccess:"Your token #{token} has been cancelled.",completedSuccess:"Token #{token} completed! Thank you for visiting.",invalidMobile:"Please enter a valid 10-digit mobile number.",invalidTravel:"Please enter a valid travel time (1-180 mins).",durationLabel:"Duration",freeStatus:"Free",busyStatus:"Busy",fullStatus:"Full",searchPlaceholder:"Search salons by name or area...",searchNoResults:"No salons found matching '{query}'",ownerAnalytics:"Analytics",ownerServices:"Services Control",ownerOffers:"Offers Control",ownerBarbers:"Barbers Control",addService:"Add New Service",serviceNameEn:"Name (English)",serviceNameHi:"Name (Hindi)",selectIcon:"Select Icon",barbersDurations:"Barber Service Durations",mostActive:"Most Active Barber",ownerLoginTitle:"Owner Authentication",pinLabel:"Enter Password",ownerEmailLabel:"Owner Email",regPasswordLabel:"Set Password (min 6 characters)",loginBtn:"Authenticate",logoutBtn:"Logout Owner",invalidPin:"Invalid credentials. Please try again.",loginSuccess:"Successfully logged in!",logoutSuccess:"Logged out successfully.",selectedServicesSummary:"Selected ({count}): {list} | {duration} mins",viewDetails:"View Details",ownerPanelLink:"Owner",feedbackTitle:"Give Feedback",feedbackBarberLabel:"Rate Barber ({name})",feedbackSalonLabel:"Rate Salon",commentLabel:"Comments / Suggestions",submitFeedback:"Submit Feedback",recentReviews:"Customer Reviews & Ratings",avgSalonRating:"Avg Salon Rating",avgBarberRating:"Avg Barber Rating",giveFeedbackBtn:"Give Feedback",noReviews:"No reviews yet.",feedbackSuccess:"Thank you for your feedback!",emergencyBookingLabel:"Book as Emergency / VIP (+₹100)",emergencyBookingDesc:"Grabs cancellation slot or top priority",shiftQueue:"Shift Queue (Fill Gap)",otpLabel:"Enter OTP sent to your Mobile & Email",verifyOtpBtn:"Verify & Complete Registration",serviceRates:"Service Rates",loginIdentityLabel:"Salon Name or Mobile",ownerMobileLabel:"Owner Mobile (10 digits)",ownerNameLabel:"Owner Name",ownerRegisterTitle:"Register Salon & Owner",registerBtn:"Register Salon",salonAddressLabel:"Salon Address",salonNameLabel:"Salon Name",salonsListTitle:"Nearby Salons",featured:"Featured",activeGold:"Active - Gold Tier 👑",activeSilver:"Active - Silver Tier 🥈",activeBronze:"Active - Bronze Tier 🥉",inactiveAd:"Inactive (<80 bookings this week)",fastPassStatus:"Fast Pass 🟢",standardStatus:"Standard 🟡",highDemandStatus:"High Demand 🟠"},hi:{subtitle:"लाइव सैलून टोकन सिस्टम",historyBtn:"इतिहास",selectSalon:"सैलून चुनें",selectSalonPlaceholder:"विवरण, नाई और बुकिंग विकल्प देखने के लिए कृपया ऊपर दिए गए मानचित्र से एक सैलून चुनें।",barbersHeader:"अपना नाई चुनें",servicesHeader:"सेवाएं चुनें",bookTokenBtn:"टोकन बुक करें",activeTokenTitle:"लाइव",tokenNo:"टोकन संख्या",estWait:"शेष प्रतीक्षा समय",mins:"मिनट",travelTime:"यात्रा समय",cancelToken:"टोकन रद्द करें",barberControl:"नाई नियंत्रण (डेमो)",nextCustomer:"अगला टोकन",add5mins:"+5 मिनट",sub5mins:"-5 मिनट",whatsappTitle:"LUZO अलर्ट",whatsappMsg:"निकलने का समय हो गया! आपकी शेष प्रतीक्षा {wait} मिनट है, जो आपके {travel} मिनट के यात्रा समय के बराबर है।",bookingModalTitle:"टोकन की पुष्टि करें",mobileLabel:"मोबाइल नंबर (10 अंक)",travelLabel:"सैलून तक पहुंचने का समय (मिनट)",confirmBtn:"पुष्टि करें और बुक करें",cancelBtn:"बंद करें",historyModalTitle:"📜 बुकिंग इतिहास",clearHistoryBtn:"इतिहास साफ करें",historyEmpty:"कोई बुकिंग इतिहास नहीं मिला।",statusActive:"सक्रिय",statusCompleted:"पूर्ण",statusCancelled:"रद्द",ownerPanelTitle:"सैलून मालिक पैनल",editOfferLabel:"सक्रिय प्रस्ताव पाठ संपादित करें",saveOfferBtn:"ऑफर सहेजें",footerText:"🔒 केवल आप इस डिवाइस पर अपना टोकन इतिहास देखते हैं।",pendingTokens:"लंबित टोकन",salonStatus:"अनुमानित प्रतीक्षा समय",currentOffer:"सक्रिय ऑफर",cancelConfirm:"क्या आप वाकई इस टोकन को रद्द करना चाहते हैं?",cancelSuccess:"आपका टोकन #{token} रद्द कर दिया गया है।",completedSuccess:"टोकन #{token} पूरा हुआ! आने के लिए धन्यवाद।",invalidMobile:"कृपया एक वैध 10-अंकीय मोबाइल नंबर दर्ज करें।",invalidTravel:"कृपया एक वैध यात्रा समय दर्ज करें (1-180 मिनट)।",durationLabel:"अवधि",freeStatus:"खाली",busyStatus:"व्यस्त",fullStatus:"हाउसफुल",searchPlaceholder:"नाम या क्षेत्र से सैलून खोजें...",searchNoResults:"'{query}' से मेल खाता कोई सैलून नहीं मिला",ownerAnalytics:"विश्लेषण",ownerServices:"सेवाएं नियंत्रण",ownerOffers:"ऑफर नियंत्रण",ownerBarbers:"नाई नियंत्रण",addService:"नई सेवा जोड़ें",serviceNameEn:"नाम (अंग्रेजी)",serviceNameHi:"नाम (हिंदी)",selectIcon:"आइकन चुनें",barbersDurations:"नाई सेवा समय",mostActive:"सबसे सक्रिय नाई",ownerLoginTitle:"मालिक प्रमाणीकरण",pinLabel:"पासवर्ड दर्ज करें",ownerEmailLabel:"मालिक का ईमेल",regPasswordLabel:"पासवर्ड सेट करें (न्यूनतम 6 अक्षर)",loginBtn:"प्रमाणित करें",logoutBtn:"लॉगआउट मालिक",invalidPin:"अमान्य पासवर्ड। कृपया पुनः प्रयास करें।",loginSuccess:"सफलतापूर्वक लॉगिन किया गया!",logoutSuccess:"सफलतापूर्वक लॉगआउट किया गया।",selectedServicesSummary:"चयनित ({count}): {list} | {duration} मिनट",viewDetails:"विवरण देखें",ownerPanelLink:"मालिक",feedbackTitle:"फीडबैक दें",feedbackBarberLabel:"नाई ({name}) को rate करें",feedbackSalonLabel:"सैलून को रेट करें",commentLabel:"टिप्पणी / सुझाव",submitFeedback:"फीडबैक भेजें",recentReviews:"ग्राहक समीक्षा और रेटिंग",avgSalonRating:"औसत सैलून रेटिंग",avgBarberRating:"औसत नाई रेटिंग",giveFeedbackBtn:"फीडबैक दें",noReviews:"अभी कोई समीक्षा नहीं है।",feedbackSuccess:"आपकी प्रतिक्रिया के लिए धन्यवाद!",emergencyBookingLabel:"इमरजेंसी / वीआईपी बुक करें (+₹100)",emergencyBookingDesc:"कैंसलेशन स्लॉट या सर्वोच्च प्राथमिकता प्राप्त करें",shiftQueue:"कतार खिसकाएं (गैप भरें)",otpLabel:"मोबाइल और ईमेल पर भेजा गया ओटीपी दर्ज करें",verifyOtpBtn:"सत्यापित करें और पंजीकरण पूरा करें",serviceRates:"सेवाओं की दरें",loginIdentityLabel:"सैलून का नाम या मोबाइल",ownerMobileLabel:"मालिक का मोबाइल (10 अंक)",ownerNameLabel:"मालिक का नाम",ownerRegisterTitle:"सैलून और मालिक का पंजीकरण",registerBtn:"सैलून पंजीकृत करें",salonAddressLabel:"सैलून का पता",salonNameLabel:"सैलून का नाम",salonsListTitle:"आस-पास के सैलून",featured:"प्रायोजित",activeGold:"सक्रिय - गोल्ड टियर 👑",activeSilver:"सक्रिय - सिल्वर टियर 🥈",activeBronze:"सक्रिय - ब्रॉन्ज टियर 🥉",inactiveAd:"निष्क्रिय (इस सप्ताह <80 बुकिंग)",fastPassStatus:"तुरंत सेवा 🟢",standardStatus:"सामान्य कतार 🟡",highDemandStatus:"उच्च मांग 🟠"}};
 translations.en.ownerApprovals = "Manage Salons";
 translations.hi.ownerApprovals = "सैलून प्रबंधन";
 translations.en.pendingApprovalsTitle = "Registered Salons Review";
@@ -33,7 +33,17 @@ function getDistanceString(coords){if(!coords||coords.length<2)return'';const di
 function saveQueueGaps(){}
 function getBarberTimeline(salonId,barberName){const queue=getBarberActiveQueue(salonId,barberName);const gaps=queueGaps.filter(g=>g.salonId===salonId&&g.barberName===barberName);return[...queue,...gaps].sort((a,b)=>(a.bookingTimeMs||0)-(b.bookingTimeMs||0))}
 function updateEmergencyAlert(){const alertEl=document.getElementById('emergencySlotAlert'),alertTextEl=document.getElementById('emergencySlotAlertText');if(!alertEl||!alertTextEl)return;if(selectedSalon&&selectedBarber){const gaps=queueGaps.filter(g=>g.salonId===selectedSalon.id&&g.barberName===selectedBarber.name);if(gaps.length>0){alertTextEl.innerText=currentLang==='en'?`🚨 Express Slot Available for ${selectedBarber.name}! Book as VIP/Emergency to skip queue.`:`🚨 ${selectedBarber.name} के लिए एक्सप्रेस स्लॉट उपलब्ध! कतार से बचने के लिए वीआईपी/इमरजेंसी बुक करें।`;alertEl.classList.remove('hidden');return}}alertEl.classList.add('hidden')}
-async function shiftBarberQueue(salonId,barberName){try{await fetch('/api/gaps/shift',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({salonId,barberName})});queueGaps=queueGaps.filter(g=>!(g.salonId===salonId&&g.barberName===barberName));updateEmergencyAlert();playSound('success');renderTrackerUI();alert(currentLang==='en'?"Queue shifted! All gaps filled/removed.":"कतार आगे बढ़ा दी गई है! सभी खाली गैप भर दिए गए हैं।")}catch(e){console.error(e)}}
+async function shiftBarberQueue(salonId,barberName){
+  lastMutationTime = Date.now();
+  try{
+    await fetch('/api/gaps/shift',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({salonId,barberName})});
+    lastMutationTime = Date.now();
+    queueGaps=queueGaps.filter(g=>!(g.salonId===salonId&&g.barberName===barberName));
+    updateEmergencyAlert();
+    playSound('success');
+    renderTrackerUI();
+    alert(currentLang==='en'?"Queue shifted! All gaps filled/removed.":"कतार आगे बढ़ा दी गई है! सभी खाली गैप भर दिए गए हैं।")
+  }catch(e){console.error(e)}}
 function triggerExpressSlotNotification(salonName,barberName){playSound('alert');const text=currentLang==='en'?`🚨 Express Slot Open at ${salonName}! Barber ${barberName} has a slot. Book VIP to grab it!`:`🚨 ${salonName} में एक्सप्रेस स्लॉट उपलब्ध! नाई ${barberName} के पास स्लॉट खाली है। वीआईपी बुक करें!`;document.getElementById('whatsappMsgText').innerText=text;document.getElementById('notificationTime').innerText=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});const notification=document.getElementById('whatsappNotification');if(notification){notification.classList.remove('-translate-y-full');setTimeout(()=>closeWhatsAppNotification(),10000)}}
 function getSalonStatus(salon){if(!salon)return'free';if(salon.status==='closed')return'closed';const activeBarbers=salon.barbers.filter(b=>!b.onLeave);const barbersCount=activeBarbers.length||1;let totalWait=0;activeBarbers.forEach(barber=>{const timeline=getBarberActiveQueue(salon.id,barber.name);timeline.forEach(item=>{totalWait+=item.remainingWait})});if(totalWait===0)return'free';const avgWait=totalWait/barbersCount;if(avgWait<=150)return'busy';return'full'}
 function getSalonPendingCount(salonId){return historyData.filter(t=>t.status==='active'&&t.salonId===salonId).length}
@@ -510,12 +520,20 @@ function startLocalTick() {
   }, 1000);
 }
 async function fetchLatestDataSilently() {
+  if (Date.now() - lastMutationTime < 4000) {
+    console.log("Skipping silent sync to prevent race condition with local mutation.");
+    return;
+  }
   try {
     const [salonsRes, historyRes, gapsRes] = await Promise.all([
       fetch('/api/salons'),
       fetch('/api/bookings/history'),
       fetch('/api/gaps')
     ]);
+    if (Date.now() - lastMutationTime < 4000) {
+      console.log("Discarding silent sync response due to recent local mutation.");
+      return;
+    }
     if (salonsRes.ok) salonsData = await salonsRes.json();
     if (gapsRes.ok) {
       const newGaps = await gapsRes.json();
@@ -637,8 +655,25 @@ function renderTrackerUI(){
   }
   activeTokens.sort((a,b)=>(a.bookingTimeMs||0)-(b.bookingTimeMs||0));
   if(activeTokens.length===0){
+    clearTrackingMap();
     container.innerHTML='<div class="text-center py-8 text-slate-455 text-xs">' + (currentLang==='en'?'No active tokens.':'कोई सक्रिय टोकन नहीं।') + '</div>';
     return;
+  }
+  
+  if (loggedInMobile) {
+    const myActive = activeTokens.find(t => t.mobile === loggedInMobile);
+    if (myActive) {
+      const salon = salonsData.find(s => s.id === myActive.salonId);
+      if (salon && salon.coords) {
+        initTrackingMap(salon.coords, salon.name);
+      } else {
+        clearTrackingMap();
+      }
+    } else {
+      clearTrackingMap();
+    }
+  } else {
+    clearTrackingMap();
   }
   let html='';
   activeTokens.forEach(token=>{
@@ -694,16 +729,16 @@ function renderTrackerUI(){
       if (isSuperAdmin || (loggedInSalonId && loggedInSalonId === token.salonId)) {
         barberControlHtml = '<div class="mt-4 pt-3 border-t border-slate-900">' +
           '<p class="text-[10px] text-brand-400 font-bold uppercase tracking-wider mb-2 text-center">' + t('barberControl') + '</p>' +
-          '<div class="grid grid-cols-3 gap-1.5">' +
-            '<button onclick="simulateNextToken(\'' + token._id + '\')" class="bg-emerald-955/40 hover:bg-emerald-900 border border-emerald-800 text-emerald-400 py-1.5 rounded-lg text-[9px] font-bold transition-all flex items-center justify-center space-x-1">' +
+          '<div class="grid grid-cols-3 gap-2">' +
+            '<button onclick="simulateNextToken(\'' + token._id + '\')" class="bg-emerald-955/40 hover:bg-emerald-900 border border-emerald-800 text-emerald-400 py-2.5 rounded-lg text-xs font-bold transition-all flex items-center justify-center space-x-1">' +
               '<i class="fa-solid fa-circle-check"></i>' +
               '<span>' + t('nextCustomer') + '</span>' +
             '</button>' +
-            '<button onclick="simulateAdjustTime(\'' + token._id + '\',5)" class="bg-indigo-955/40 hover:bg-indigo-900 border border-indigo-800 text-indigo-400 py-1.5 rounded-lg text-[9px] font-bold transition-all flex items-center justify-center space-x-0.5">' +
+            '<button onclick="simulateAdjustTime(\'' + token._id + '\',5)" class="bg-indigo-955/40 hover:bg-indigo-900 border border-indigo-800 text-indigo-400 py-2.5 rounded-lg text-xs font-bold transition-all flex items-center justify-center space-x-0.5">' +
               '<i class="fa-solid fa-plus"></i>' +
               '<span>' + t('add5mins') + '</span>' +
             '</button>' +
-            '<button onclick="simulateAdjustTime(\'' + token._id + '\',-5)" class="bg-indigo-955/40 hover:bg-indigo-900 border border-indigo-800 text-indigo-400 py-1.5 rounded-lg text-[9px] font-bold transition-all flex items-center justify-center space-x-0.5">' +
+            '<button onclick="simulateAdjustTime(\'' + token._id + '\',-5)" class="bg-indigo-955/40 hover:bg-indigo-900 border border-indigo-800 text-indigo-400 py-2.5 rounded-lg text-xs font-bold transition-all flex items-center justify-center space-x-0.5">' +
               '<i class="fa-solid fa-minus"></i>' +
               '<span>' + t('sub5mins') + '</span>' +
             '</button>' +
@@ -811,11 +846,11 @@ function triggerVoiceCallAlert(token, waitTime){
   const travelMins=token.travelTime;
   let textEn, textHi;
   if (waitVal <= 0.1) {
-    textEn = `Hello! This is a call from ZeroWait Q. Your appointment at ${token.salonName} has started. Please proceed to the salon chair immediately. Thank you!`;
-    textHi = `नमस्ते! यह जीरोवेट क्यू से एक कॉल है। ${token.salonName} पर आपकी बारी शुरू हो गई है। कृपया तुरंत सैलून पहुंचें। धन्यवाद!`;
+    textEn = `Hello! This is a call from LUZO. Your appointment at ${token.salonName} has started. Please proceed to the salon chair immediately. Thank you!`;
+    textHi = `नमस्ते! यह LUZO से एक कॉल है। ${token.salonName} पर आपकी बारी शुरू हो गई है। कृपया तुरंत सैलून पहुंचें। धन्यवाद!`;
   } else {
-    textEn = `Hello! This is a call from ZeroWait Q. Your appointment at ${token.salonName} is starting soon. Your wait time is ${waitMins} minutes, which matches your travel time of ${travelMins} minutes. Please start traveling now. Thank you!`;
-    textHi = `नमस्ते! यह जीरोवेट क्यू से एक कॉल है। ${token.salonName} पर आपका अपॉइंटमेंट जल्द ही शुरू होने वाला है। आपकी प्रतीक्षा का समय ${waitMins} मिनट है, जो आपके यात्रा समय ${travelMins} मिनट के बराबर है। कृपया अभी निकलें। धन्यवाद!`;
+    textEn = `Hello! This is a call from LUZO. Your appointment at ${token.salonName} is starting soon. Your wait time is ${waitMins} minutes, which matches your travel time of ${travelMins} minutes. Please start traveling now. Thank you!`;
+    textHi = `नमस्ते! यह LUZO से एक कॉल है। ${token.salonName} पर आपका अपॉइंटमेंट जल्द ही शुरू होने वाला है। आपकी प्रतीक्षा का समय ${waitMins} मिनट है, जो आपके यात्रा समय ${travelMins} मिनट के बराबर है। कृपया अभी निकलें। धन्यवाद!`;
   }
   const speechText=currentLang==='en'?textEn:textHi;
   window.currentSpeechText=speechText;
@@ -893,8 +928,49 @@ function endSimulatedCall(){
   hangupSimulatedCall();
 }
 function incrementBarberStats(barberName,servicesIds){}
-async function simulateNextToken(bookingIdOrToken){try{const res=await fetch(`/api/bookings/${bookingIdOrToken}/simulate-next`,{method:'POST'});const booking=await res.json();const idx=historyData.findIndex(t=>(t._id && booking._id && t._id == booking._id) || (t.tokenNumber==bookingIdOrToken&&t.status==='active'));if(idx!==-1){historyData[idx].status='completed'}playSound('complete');updateTrackerBtnVisibility();renderTrackerUI();const activeLeft=historyData.some(t=>t.status==='active');if(!activeLeft){if(countdownInterval)clearInterval(countdownInterval);navigateTo('home')}const loggedInMobile=localStorage.getItem('customer_mobile');if(loggedInMobile&&booking.mobile===loggedInMobile){setTimeout(()=>openFeedbackModal(booking),100)}}catch(e){console.error(e)}}
-async function simulateAdjustTime(bookingIdOrToken,minutes){try{const res=await fetch(`/api/bookings/${bookingIdOrToken}/simulate-adjust`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({minutes})});if(!res.ok){const err=await res.json();alert(err.error||"Adjust failed.");return}const booking=await res.json();const idx=historyData.findIndex(t=>(t._id && booking._id && t._id == booking._id) || (t.tokenNumber==bookingIdOrToken&&t.status==='active'));if(idx!==-1){historyData[idx].remainingWait=booking.remainingWait}renderTrackerUI()}catch(e){console.error(e)}}
+async function simulateNextToken(bookingIdOrToken){
+  if (isSimulatingNext) return;
+  isSimulatingNext = true;
+  lastMutationTime = Date.now();
+  const btns = document.querySelectorAll('button[onclick*="simulateNextToken"]');
+  btns.forEach(btn => { btn.disabled = true; btn.style.opacity = '0.5'; });
+  try{
+    const res=await fetch(`/api/bookings/${bookingIdOrToken}/simulate-next`,{method:'POST'});
+    const booking=await res.json();
+    lastMutationTime = Date.now();
+    const idx=historyData.findIndex(t=>(t._id && booking._id && t._id == booking._id) || (t.tokenNumber==bookingIdOrToken&&t.status==='active'));
+    if(idx!==-1){historyData[idx].status='completed'}
+    playSound('complete');
+    updateTrackerBtnVisibility();
+    renderTrackerUI();
+    const activeLeft=historyData.some(t=>t.status==='active');
+    if(!activeLeft){if(countdownInterval)clearInterval(countdownInterval);navigateTo('home')}
+    const loggedInMobile=localStorage.getItem('customer_mobile');
+    if(loggedInMobile&&booking.mobile===loggedInMobile){setTimeout(()=>openFeedbackModal(booking),100)}
+  }catch(e){console.error(e)}finally{
+    isSimulatingNext = false;
+    btns.forEach(btn => { btn.disabled = false; btn.style.opacity = '1'; });
+  }
+}
+async function simulateAdjustTime(bookingIdOrToken,minutes){
+  if (isAdjustingTime) return;
+  isAdjustingTime = true;
+  lastMutationTime = Date.now();
+  const btns = document.querySelectorAll('button[onclick*="simulateAdjustTime"]');
+  btns.forEach(btn => { btn.disabled = true; btn.style.opacity = '0.5'; });
+  try{
+    const res=await fetch(`/api/bookings/${bookingIdOrToken}/simulate-adjust`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({minutes})});
+    if(!res.ok){const err=await res.json();alert(err.error||"Adjust failed.");return}
+    const booking=await res.json();
+    lastMutationTime = Date.now();
+    const idx=historyData.findIndex(t=>(t._id && booking._id && t._id == booking._id) || (t.tokenNumber==bookingIdOrToken&&t.status==='active'));
+    if(idx!==-1){historyData[idx].servicesDuration=booking.servicesDuration;historyData[idx].remainingWait=booking.remainingWait}
+    renderTrackerUI()
+  }catch(e){console.error(e)}finally{
+    isAdjustingTime = false;
+    btns.forEach(btn => { btn.disabled = false; btn.style.opacity = '1'; });
+  }
+}
 let isCancellingToken = false;
 async function cancelActiveToken(bookingIdOrToken){
   if(isCancellingToken) return;
@@ -904,6 +980,7 @@ async function cancelActiveToken(bookingIdOrToken){
   if(!confirmCancel)return;
   
   isCancellingToken = true;
+  lastMutationTime = Date.now();
   try{
     playSound('cancel');
     const res=await fetch(`/api/bookings/${bookingIdOrToken}/cancel`,{method:'POST'});
@@ -914,6 +991,7 @@ async function cancelActiveToken(bookingIdOrToken){
       return;
     }
     const result=await res.json();
+    lastMutationTime = Date.now();
     const idx=historyData.findIndex(t=>(t._id && result.booking._id && t._id == result.booking._id) || (t.tokenNumber==bookingIdOrToken&&t.status==='active'));
     if(idx!==-1){
       historyData[idx].status='cancelled'
@@ -1152,7 +1230,7 @@ async function submitRegisterOwner(){
 function triggerOtpNotification(otp,mobile,email){
   playSound('alert');
   const last4=mobile.slice(-4);
-  const text=currentLang==='en'?`💬 ZeroWait Q Alert: Your verification OTP is ${otp}. Sent to Mobile (******${last4}) & Email (${email}).`:`💬 जीरोवेट क्यू अलर्ट: आपका सत्यापन ओटीपी ${otp} है। मोबाइल (******${last4}) और ईमेल (${email}) पर भेजा गया है।`;
+  const text=currentLang==='en'?`💬 LUZO Alert: Your verification OTP is ${otp}. Sent to Mobile (******${last4}) & Email (${email}).`:`💬 LUZO अलर्ट: आपका सत्यापन ओटीपी ${otp} है। मोबाइल (******${last4}) और ईमेल (${email}) पर भेजा गया है।`;
   document.getElementById('whatsappMsgText').innerText=text;
   document.getElementById('notificationTime').innerText=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
   const notification=document.getElementById('whatsappNotification');
@@ -1166,7 +1244,7 @@ function triggerOtpNotification(otp,mobile,email){
   if (hintEl) {
     hintEl.innerText = currentLang === 'en' ? `(For testing, OTP is: ${otp})` : `(परीक्षण के लिए, ओटीपी: ${otp})`;
   }
-  alert(currentLang === 'en' ? `Your ZeroWait Q verification OTP is: ${otp}` : `आपका ज़ीरोवेट क्यू सत्यापन ओटीपी है: ${otp}`);
+  alert(currentLang === 'en' ? `Your LUZO verification OTP is: ${otp}` : `आपका LUZO सत्यापन ओटीपी है: ${otp}`);
 }
 function backToRegisterFields(){document.getElementById('reg-otp-container').classList.add('hidden');document.getElementById('reg-fields-container').classList.remove('hidden')}
 async function submitVerifyOtp(){const otp=document.getElementById('regOtpInput').value.trim();const errMsg=document.getElementById('otpErrorMsg');if(!/^\d{6}$/.test(otp)){errMsg.innerText=currentLang==='en'?"Please enter a valid 6-digit OTP.":"कृपया एक वैध 6-अंकीय ओटीपी दर्ज करें।";errMsg.classList.remove('hidden');return}try{const res=await fetch('/api/owners/verify-otp',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({tempId:tempRegistrationId,otp})});if(!res.ok){const err=await res.json();errMsg.innerText=err.error;errMsg.classList.remove('hidden');return}const resSalons=await fetch('/api/salons');salonsData=await resSalons.json();const resOwners=await fetch('/api/owners');ownersData=await resOwners.json();alert(currentLang==='en'?"Salon registered successfully! You can now login.":"सैलून सफलतापूर्वक पंजीकृत हो गया! अब आप लॉगिन कर सकते हैं।");toggleLoginRegisterView(false);document.getElementById('regOwnerName').value='';document.getElementById('regOwnerMobile').value='';document.getElementById('regOwnerEmail').value='';document.getElementById('regSalonName').value='';document.getElementById('regSalonAddress').value='';document.getElementById('regSalonLat').value='';document.getElementById('regSalonLng').value='';document.getElementById('regOwnerPassword').value='';document.getElementById('regOtpInput').value='';clearRegPhoto()}catch(e){console.error(e)}}
@@ -1208,7 +1286,12 @@ async function renderOwnerServicesControl(){const dropdown=document.getElementBy
 async function deleteOwnerService(salonId,srvId){if(!confirm("Are you sure you want to remove this service?"))return;try{await fetch('/api/salons/services',{method:'DELETE',headers:{'Content-Type':'application/json'},body:JSON.stringify({salonId,srvId})});await renderOwnerServicesControl();selectedServices=selectedServices.filter(id=>id!==srvId);if(selectedSalon&&selectedSalon.id===salonId){const res=await fetch(`/api/services/${salonId}`);salonServicesData=await res.json();renderServicesGrid();updateServiceTimesSum();checkBookingState()}}catch(e){console.error(e)}}
 async function saveOwnerService(){const dropdown=document.getElementById('ownerSalonSelector');const salonId=dropdown.value||loggedInSalonId;const nameEn=document.getElementById('newServiceEn').value.trim(),nameHi=document.getElementById('newServiceHi').value.trim(),icon=document.getElementById('newServiceIcon').value;const priceVal=parseInt(document.getElementById('newServicePrice').value.trim(),10)||0;if(!nameEn||!nameHi){alert("Please enter a service name in both English and Hindi.");return}const id=nameEn.toLowerCase().replace(/\s+/g,'_'),times={};const inputs=document.querySelectorAll('#newServiceBarbersInputsList input');inputs.forEach(input=>{const bName=input.getAttribute('data-barber'),minVal=parseInt(input.value.trim(),10)||15;times[bName]=minVal});try{const res=await fetch('/api/salons/services',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({salonId,id,nameEn,nameHi,icon,times,price:priceVal})});if(!res.ok){const err=await res.json();alert(err.error);return}document.getElementById('newServiceEn').value='';document.getElementById('newServiceHi').value='';document.getElementById('newServicePrice').value='';alert("New service successfully added!");await renderOwnerServicesControl();if(selectedSalon&&selectedSalon.id===salonId){const resSrv=await fetch(`/api/services/${salonId}`);salonServicesData=await resSrv.json();renderServicesGrid();updateServiceTimesSum();checkBookingState()}}catch(e){console.error(e)}}
 async function saveOwnerOffer(){const activeSalonId=isSuperAdmin?document.getElementById('ownerSalonSelector').value:loggedInSalonId;const input=document.getElementById('editOfferInput').value.trim(),statusSelect=document.getElementById('ownerSalonStatusInput'),newStatus=statusSelect?statusSelect.value:'open';const comboActive=document.getElementById('ownerComboActiveInput')?document.getElementById('ownerComboActiveInput').checked:false;const triggerCheckboxes=document.querySelectorAll('#ownerComboTriggersContainer input[type="checkbox"]:checked');const comboTriggerServiceIds=Array.from(triggerCheckboxes).map(cb=>cb.value);const comboRewardServiceId=document.getElementById('ownerComboRewardInput')?document.getElementById('ownerComboRewardInput').value:'';if(comboActive){if(comboTriggerServiceIds.length===0){alert(currentLang==='en'?"Please select at least one trigger service.":"कृपया कम से कम एक ट्रिगर सेवा चुनें।");return}if(!comboRewardServiceId){alert(currentLang==='en'?"Please select a free reward service.":"कृपया एक मुफ्त इनाम सेवा चुनें।");return}if(comboTriggerServiceIds.includes(comboRewardServiceId)){alert(t('comboSameServiceError'));return}}const adBannerUrl=document.getElementById('ownerAdBannerUrlInput')?document.getElementById('ownerAdBannerUrlInput').value.trim():'';try{const res=await fetch('/api/salons/config',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({salonId:activeSalonId,offer:input,status:newStatus,comboActive,comboTriggerServiceIds,comboRewardServiceId,adBannerUrl})});const updatedSalon=await res.json();const idx=salonsData.findIndex(s=>s.id===activeSalonId);if(idx!==-1)salonsData[idx]=updatedSalon;if(selectedSalon&&selectedSalon.id===activeSalonId){selectedSalon=updatedSalon;renderSalonCard();renderBarbersList();renderServicesGrid();checkBookingState()}renderMapMarkers(salonsData.filter(s=>s.status!=='pending'));renderFeaturedSalonsSlider();historyData=historyData.map(t=>{if(t.salonId===activeSalonId&&t.status==='active'){t.offer=input}return t});alert("Salon configuration updated successfully!");navigateTo('home')}catch(e){alert("Error updating salon configuration.")}}
-function navigateTo(screenId){const customerLoggedIn=localStorage.getItem('customer_logged_in')==='true';const ownerLoggedIn=localStorage.getItem('trimora_owner_logged_in')==='true';if(!customerLoggedIn&&!ownerLoggedIn&&screenId!=='customer-auth'&&screenId!=='owner'&&screenId!=='language'){screenId='customer-auth'}currentScreen=screenId;const screens=['home','details','confirm','tracking','history','owner','language','customer-auth'];screens.forEach(s=>{const el=document.getElementById('screen-'+s);if(el){el.classList.add('hidden');el.classList.remove('flex')}});const activeEl=document.getElementById('screen-'+screenId);if(activeEl){activeEl.classList.remove('hidden');activeEl.classList.add('flex')}if(screenId==='home'&&map){setTimeout(()=>map.invalidateSize(),100)}if(screenId==='owner'){const titleEl=document.getElementById('ownerHeaderTitle');if(activeOwnerTab==='analytics')titleEl.innerText=currentLang==='en'?"Barber Analytics (Owner)":"नाई विश्लेषण (मालिक)";else if(activeOwnerTab==='barbers')titleEl.innerText=currentLang==='en'?"Barbers Control":"नाई नियंत्रण (मालिक)";else if(activeOwnerTab==='services')titleEl.innerText=currentLang==='en'?"Salon Services Management":"सेवाएं नियंत्रण (मालिक)";else if(activeOwnerTab==='offers')titleEl.innerText=currentLang==='en'?"Update Salon Offer":"सैलून ऑफ़र अपडेट करें";else if(activeOwnerTab==='approvals')titleEl.innerText=currentLang==='en'?"Manage Salons (Super Admin)":"सैलून प्रबंधन (सुपर एडमिन)"}if(screenId==='language'){const radios=document.getElementsByName('langSelect');radios.forEach(r=>{r.checked=(r.value===currentLang)})}if(screenId==='history')setHistoryFilter(currentHistoryFilter)}
+function navigateTo(screenId){
+  if (screenId !== 'tracking') {
+    clearTrackingMap();
+  }
+  const customerLoggedIn=localStorage.getItem('customer_logged_in')==='true';
+  const ownerLoggedIn=localStorage.getItem('trimora_owner_logged_in')==='true';if(!customerLoggedIn&&!ownerLoggedIn&&screenId!=='customer-auth'&&screenId!=='owner'&&screenId!=='language'){screenId='customer-auth'}currentScreen=screenId;const screens=['home','details','confirm','tracking','history','owner','language','customer-auth'];screens.forEach(s=>{const el=document.getElementById('screen-'+s);if(el){el.classList.add('hidden');el.classList.remove('flex')}});const activeEl=document.getElementById('screen-'+screenId);if(activeEl){activeEl.classList.remove('hidden');activeEl.classList.add('flex')}if(screenId==='home'&&map){setTimeout(()=>map.invalidateSize(),100)}if(screenId==='owner'){const titleEl=document.getElementById('ownerHeaderTitle');if(activeOwnerTab==='analytics')titleEl.innerText=currentLang==='en'?"Barber Analytics (Owner)":"नाई विश्लेषण (मालिक)";else if(activeOwnerTab==='barbers')titleEl.innerText=currentLang==='en'?"Barbers Control":"नाई नियंत्रण (मालिक)";else if(activeOwnerTab==='services')titleEl.innerText=currentLang==='en'?"Salon Services Management":"सेवाएं नियंत्रण (मालिक)";else if(activeOwnerTab==='offers')titleEl.innerText=currentLang==='en'?"Update Salon Offer":"सैलून ऑफ़र अपडेट करें";else if(activeOwnerTab==='approvals')titleEl.innerText=currentLang==='en'?"Manage Salons (Super Admin)":"सैलून प्रबंधन (सुपर एडमिन)"}if(screenId==='language'){const radios=document.getElementsByName('langSelect');radios.forEach(r=>{r.checked=(r.value===currentLang)})}if(screenId==='history')setHistoryFilter(currentHistoryFilter)}
 function setAppLanguage(lang){currentLang=lang;const langLabel=document.getElementById('langLabel');if(langLabel)langLabel.innerText=currentLang==='en'?'हिंदी':'EN';updateLanguageUI();renderSalonsList(salonsData.filter(s=>s.status!=='pending'));renderFeaturedSalonsSlider();if(selectedSalon){triggerBooking(selectedSalon.id)}renderTrackerUI();checkBookingState();navigateTo('home')}
 function t(key){return translations[currentLang][key]||key}
   function updateLanguageUI(){const elements=document.querySelectorAll('[data-translate]');elements.forEach(element=>{const key=element.getAttribute('data-translate');if(translations[currentLang]&&translations[currentLang][key])element.innerText=translations[currentLang][key]});const editInput=document.getElementById('editOfferInput');if(editInput)editInput.placeholder=currentLang==='en'?"Type new offer message...":"नया ऑफ़र संदेश लिखें...";const searchInput=document.getElementById('salonSearchInput');if(searchInput)searchInput.placeholder=t('searchPlaceholder');const mobileInput=document.getElementById('mobileNumberInput');if(mobileInput)mobileInput.placeholder=currentLang==='en'?"9876543210":"९८७६५४३२१०";const menuLang=document.getElementById('menuLangLabel');if(menuLang)menuLang.innerText=currentLang==='en'?'हिंदी (Hindi)':'English (EN)'}
@@ -1840,8 +1923,8 @@ function triggerForgotOtpNotification(otp, mobile) {
   }
   const last4 = mobile.slice(-4);
   const text = currentLang === 'en' 
-    ? `🔑 ZeroWait Q Reset: Your password reset OTP is ${otp}. Valid for 5 mins.` 
-    : `🔑 ज़ीरोवेट क्यू रीसेट: आपका पासवर्ड रीसेट ओटीपी ${otp} है। यह 5 मिनट के लिए वैध है।`;
+    ? `🔑 LUZO Reset: Your password reset OTP is ${otp}. Valid for 5 mins.` 
+    : `🔑 LUZO रीसेट: आपका पासवर्ड रीसेट ओटीपी ${otp} है। यह 5 मिनट के लिए वैध है।`;
   
   const msgTextEl = document.getElementById('whatsappMsgText');
   const timeEl = document.getElementById('notificationTime');
@@ -1958,6 +2041,114 @@ function checkUnratedCompletedBookings() {
           }
         }, 800);
       }
+    }
+  }
+}
+
+// Global state for Polling Lock & Leaflet Live Route Map
+let lastMutationTime = 0;
+let isAdjustingTime = false;
+let isSimulatingNext = false;
+let trackingMapInstance = null;
+let trackingRoutingControl = null;
+let trackingUserMarker = null;
+let trackingSalonMarker = null;
+
+function initTrackingMap(salonCoords, salonName) {
+  const mapEl = document.getElementById('trackingMap');
+  if (!mapEl) return;
+  mapEl.classList.remove('hidden');
+
+  try {
+    if (typeof L === 'undefined') {
+      console.warn("Leaflet (L) is not defined.");
+      mapEl.classList.add('hidden');
+      return;
+    }
+
+    if (!trackingMapInstance) {
+      trackingMapInstance = L.map('trackingMap', { zoomControl: false }).setView(userLocation, 14);
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { maxZoom: 20 }).addTo(trackingMapInstance);
+      L.control.zoom({ position: 'bottomright' }).addTo(trackingMapInstance);
+    } else {
+      if (trackingRoutingControl) {
+        trackingMapInstance.removeControl(trackingRoutingControl);
+        trackingRoutingControl = null;
+      }
+      if (trackingUserMarker) {
+        trackingMapInstance.removeLayer(trackingUserMarker);
+        trackingUserMarker = null;
+      }
+      if (trackingSalonMarker) {
+        trackingMapInstance.removeLayer(trackingSalonMarker);
+        trackingSalonMarker = null;
+      }
+    }
+
+    // Customer position (gold home marker)
+    const customerIcon = L.divIcon({
+      className: 'custom-div-icon',
+      html: `<div class="flex items-center justify-center w-7 h-7 rounded-full shadow-lg border-2 border-slate-900 p-0.5" style="background-color:#c99e32;"><i class="fa-solid fa-house-user text-white text-xs"></i></div>`,
+      iconSize: [28, 28],
+      iconAnchor: [14, 14]
+    });
+    trackingUserMarker = L.marker(userLocation, { icon: customerIcon }).addTo(trackingMapInstance)
+      .bindPopup(`<div class="p-1 text-slate-100 text-xs font-semibold">You / आप</div>`);
+
+    // Salon position (emerald salon logo marker)
+    const salonIcon = L.divIcon({
+      className: 'custom-div-icon',
+      html: `<div class="flex items-center justify-center w-7 h-7 rounded-full shadow-lg border-2 border-slate-900 p-0.5" style="background-color:#10b981;"><img src="images/logo_symbol_trans.png?v=1.3" class="w-full h-full object-contain"></div>`,
+      iconSize: [28, 28],
+      iconAnchor: [14, 14]
+    });
+    trackingSalonMarker = L.marker(salonCoords, { icon: salonIcon }).addTo(trackingMapInstance)
+      .bindPopup(`<div class="p-1 text-slate-100 text-xs font-semibold">${salonName}</div>`);
+
+    // Draw route using Leaflet Routing Machine
+    trackingRoutingControl = L.Routing.control({
+      waypoints: [
+        L.latLng(userLocation[0], userLocation[1]),
+        L.latLng(salonCoords[0], salonCoords[1])
+      ],
+      lineOptions: {
+        styles: [{ color: '#c99e32', weight: 5, opacity: 0.85 }]
+      },
+      createMarker: function() { return null; },
+      addWaypoints: false,
+      routeWhileDragging: false,
+      draggableWaypoints: false,
+      fitSelectedRoutes: true,
+      show: false
+    }).addTo(trackingMapInstance);
+
+    setTimeout(() => {
+      if (trackingMapInstance) {
+        trackingMapInstance.invalidateSize();
+      }
+    }, 200);
+
+  } catch (err) {
+    console.error("Tracking map error:", err);
+  }
+}
+
+function clearTrackingMap() {
+  const mapEl = document.getElementById('trackingMap');
+  if (mapEl) mapEl.classList.add('hidden');
+  
+  if (trackingMapInstance) {
+    if (trackingRoutingControl) {
+      try { trackingMapInstance.removeControl(trackingRoutingControl); } catch (e) {}
+      trackingRoutingControl = null;
+    }
+    if (trackingUserMarker) {
+      try { trackingMapInstance.removeLayer(trackingUserMarker); } catch (e) {}
+      trackingUserMarker = null;
+    }
+    if (trackingSalonMarker) {
+      try { trackingMapInstance.removeLayer(trackingSalonMarker); } catch (e) {}
+      trackingSalonMarker = null;
     }
   }
 }
