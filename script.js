@@ -168,15 +168,9 @@ function checkBookingState(){const btn=document.getElementById('bookTokenBtn'),h
 function openBookingModal(){if(!selectedSalon||!selectedBarber||selectedServices.length===0)return;navigateTo('confirm');document.getElementById('modalSalonLabel').innerText=selectedSalon.name;document.getElementById('modalBarberLabel').innerText=(currentLang==='en'?"Barber: ":"नाई: ")+selectedBarber.name;const duration=selectedServices.reduce((sum,id)=>{const s=salonServicesData.find(srv=>srv.id===id);return sum+(s?(s.times[selectedBarber.name]||0):0)},0);const comboTriggered=selectedSalon.comboActive&&selectedSalon.comboTriggerServiceIds&&selectedSalon.comboTriggerServiceIds.length>0&&selectedSalon.comboRewardServiceId&&selectedSalon.comboTriggerServiceIds.every(tid=>selectedServices.includes(tid));const basePrice=selectedServices.reduce((sum,id)=>{if(comboTriggered&&id===selectedSalon.comboRewardServiceId)return sum;const s=salonServicesData.find(srv=>srv.id===id);return sum+(s?(s.price||0):0)},0);function updateConfirmModalPrice(){const isEmergency=document.getElementById('emergencyBookingToggle')&&document.getElementById('emergencyBookingToggle').checked;const finalPrice=basePrice+(isEmergency?100:0);document.getElementById('modalDurationLabel').innerText=`${duration} mins | Total: ₹${finalPrice}`}const toggle=document.getElementById('emergencyBookingToggle');if(toggle){toggle.onchange=updateConfirmModalPrice}updateConfirmModalPrice();document.getElementById('modalOfferText').innerText=selectedSalon.offer;const servicesWithPrices=selectedServices.map(id=>{const s=salonServicesData.find(srv=>srv.id===id);if(!s)return id;const name=currentLang==='en'?s.nameEn:s.nameHi;const price=(comboTriggered&&id===selectedSalon.comboRewardServiceId)?0:(s.price||0);return`${name} (₹${price})`}).join(', ');document.getElementById('modalServicesList').innerText=(currentLang==='en'?"Services: ":"सेवाएं: ")+servicesWithPrices;const loggedInMobile=localStorage.getItem('customer_mobile');
   const input=document.getElementById('mobileNumberInput');
   if(input){
-    if(loggedInMobile){
-      input.value=loggedInMobile;
-      input.readOnly=true;
-      input.classList.add('opacity-70', 'cursor-not-allowed');
-    } else {
-      input.value='';
-      input.readOnly=false;
-      input.classList.remove('opacity-70', 'cursor-not-allowed');
-    }
+    input.value=loggedInMobile || '';
+    input.readOnly=false;
+    input.classList.remove('opacity-70', 'cursor-not-allowed');
   }}
 function getBarberActiveQueue(salonId,barberName){return historyData.filter(t=>t.status==='active'&&t.salonId===salonId&&t.barberName===barberName).sort((a,b)=>(a.bookingTimeMs||0)-(b.bookingTimeMs||0))}
 async function confirmBooking(){
@@ -233,8 +227,10 @@ async function confirmBooking(){
     checkOwnerAccess();
     
     // Maintain customer session
-    localStorage.setItem('customer_logged_in', 'true');
-    localStorage.setItem('customer_mobile', mobileInput);
+    if (!localStorage.getItem('customer_mobile')) {
+      localStorage.setItem('customer_logged_in', 'true');
+      localStorage.setItem('customer_mobile', mobileInput);
+    }
 
     const res=await fetch('/api/bookings',{
       method:'POST',
