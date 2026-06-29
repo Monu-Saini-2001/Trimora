@@ -56,8 +56,62 @@ async function shiftBarberQueue(salonId,barberName){
 function triggerExpressSlotNotification(salonName,barberName){playSound('alert');const text=currentLang==='en'?`🚨 Express Slot Open at ${salonName}! Barber ${barberName} has a slot. Book VIP to grab it!`:`🚨 ${salonName} में एक्सप्रेस स्लॉट उपलब्ध! नाई ${barberName} के पास स्लॉट खाली है। वीआईपी बुक करें!`;document.getElementById('whatsappMsgText').innerText=text;document.getElementById('notificationTime').innerText=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});const notification=document.getElementById('whatsappNotification');if(notification){notification.classList.remove('-translate-y-full');setTimeout(()=>closeWhatsAppNotification(),10000)}}
 function getSalonStatus(salon){if(!salon)return'free';if(salon.status==='closed')return'closed';const activeBarbers=salon.barbers.filter(b=>!b.onLeave);const barbersCount=activeBarbers.length||1;let totalWait=0;activeBarbers.forEach(barber=>{const timeline=getBarberActiveQueue(salon.id,barber.name);timeline.forEach(item=>{totalWait+=item.remainingWait})});if(totalWait===0)return'free';const avgWait=totalWait/barbersCount;if(avgWait<=150)return'busy';return'full'}
 function getSalonPendingCount(salonId){return historyData.filter(t=>t.status==='active'&&t.salonId===salonId).length}
-const audioCtx=new(window.AudioContext||window.webkitAudioContext)();
-function playSound(type){if(audioCtx.state==='suspended')audioCtx.resume();const osc=audioCtx.createOscillator(),gain=audioCtx.createGain();osc.connect(gain);gain.connect(audioCtx.destination);const now=audioCtx.currentTime;if(type==='success'){osc.type='sine';osc.frequency.setValueAtTime(440,now);osc.frequency.exponentialRampToValueAtTime(880,now+0.3);gain.gain.setValueAtTime(0.15,now);gain.gain.exponentialRampToValueAtTime(0.01,now+0.3);osc.start(now);osc.stop(now+0.3)}else if(type==='alert'){osc.type='sine';osc.frequency.setValueAtTime(660,now);osc.frequency.setValueAtTime(660,now+0.08);osc.frequency.setValueAtTime(880,now+0.12);gain.gain.setValueAtTime(0.2,now);gain.gain.setValueAtTime(0.01,now+0.08);gain.gain.setValueAtTime(0.2,now+0.12);gain.gain.exponentialRampToValueAtTime(0.01,now+0.35);osc.start(now);osc.stop(now+0.4)}else if(type==='cancel'){osc.type='triangle';osc.frequency.setValueAtTime(350,now);osc.frequency.exponentialRampToValueAtTime(150,now+0.45);gain.gain.setValueAtTime(0.25,now);gain.gain.exponentialRampToValueAtTime(0.01,now+0.45);osc.start(now);osc.stop(now+0.45)}else if(type==='complete'){osc.type='sine';osc.frequency.setValueAtTime(523.25,now);osc.frequency.setValueAtTime(659.25,now+0.1);gain.gain.setValueAtTime(0.15,now);gain.gain.setValueAtTime(0.2,now+0.1);gain.gain.exponentialRampToValueAtTime(0.01,now+0.6);osc.start(now);osc.stop(now+0.6)}}
+let audioCtx=null;
+function playSound(type){
+  try {
+    if(!audioCtx){
+      const AudioCtxClass = window.AudioContext || window.webkitAudioContext;
+      if(AudioCtxClass){
+        audioCtx = new AudioCtxClass();
+      }
+    }
+    if(!audioCtx) return;
+    if(audioCtx.state==='suspended') audioCtx.resume();
+    const osc=audioCtx.createOscillator(),gain=audioCtx.createGain();
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    const now=audioCtx.currentTime;
+    if(type==='success'){
+      osc.type='sine';
+      osc.frequency.setValueAtTime(440,now);
+      osc.frequency.exponentialRampToValueAtTime(880,now+0.3);
+      gain.gain.setValueAtTime(0.15,now);
+      gain.gain.exponentialRampToValueAtTime(0.01,now+0.3);
+      osc.start(now);
+      osc.stop(now+0.3);
+    }else if(type==='alert'){
+      osc.type='sine';
+      osc.frequency.setValueAtTime(660,now);
+      osc.frequency.setValueAtTime(660,now+0.08);
+      osc.frequency.setValueAtTime(880,now+0.12);
+      gain.gain.setValueAtTime(0.2,now);
+      gain.gain.setValueAtTime(0.01,now+0.08);
+      gain.gain.setValueAtTime(0.2,now+0.12);
+      gain.gain.exponentialRampToValueAtTime(0.01,now+0.35);
+      osc.start(now);
+      osc.stop(now+0.4);
+    }else if(type==='cancel'){
+      osc.type='triangle';
+      osc.frequency.setValueAtTime(350,now);
+      osc.frequency.exponentialRampToValueAtTime(150,now+0.45);
+      gain.gain.setValueAtTime(0.25,now);
+      gain.gain.exponentialRampToValueAtTime(0.01,now+0.45);
+      osc.start(now);
+      osc.stop(now+0.45);
+    }else if(type==='complete'){
+      osc.type='sine';
+      osc.frequency.setValueAtTime(523.25,now);
+      osc.frequency.setValueAtTime(659.25,now+0.1);
+      gain.gain.setValueAtTime(0.15,now);
+      gain.gain.setValueAtTime(0.2,now+0.1);
+      gain.gain.exponentialRampToValueAtTime(0.01,now+0.6);
+      osc.start(now);
+      osc.stop(now+0.6);
+    }
+  } catch(e) {
+    console.warn("Web Audio API not supported or blocked by user gesture:", e);
+  }
+}
 function clearSearch(){document.getElementById('salonSearchInput').value='';document.getElementById('searchSuggestions').classList.add('hidden');document.getElementById('clearSearchBtn').classList.add('hidden');document.getElementById('searchNoResults').classList.add('hidden');renderSalonsList(salonsData.filter(s=>s.status!=='pending'))}
 async function selectSalon(salonId){await selectSalonFromList(salonId)}
 function renderSalonsList(salons){
